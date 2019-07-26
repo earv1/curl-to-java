@@ -20,24 +20,25 @@ public class CurlToComponents {
         componentMap.get(Component.ComponentType.URL)
                 .addAll(getUrlFromCurl(curl).getExtractedComponent());
 
-
         return componentMap;
     }
 
     private static SeparatedStringComponentList getUrlFromCurl(String curl) {
-        int httpStart;
+        int httpStart = 0;
         boolean found = false;
         do {
-             httpStart = curl.indexOf("http://", 0);
+             httpStart = curl.indexOf("http", httpStart + 1);
              found = isUrlDestination(curl, httpStart);
         } while (!found);
 
         if(!found) {
             throw new RuntimeException("No destination address found");
         } else {
-            char enclosingQuote = getEnclosingQuote(curl, httpStart);
-            int valueStart = curl.indexOf(enclosingQuote, httpStart);
-            int valueEnd = curl.indexOf(enclosingQuote, valueStart);
+            int valueStart = httpStart;
+            int valueEnd = curl.indexOf(' ', valueStart + 1);
+            if(valueEnd == -1) {
+                valueEnd = curl.length();
+            }
 
             Range range = new Range(valueStart, valueStart, valueEnd);
 
@@ -51,14 +52,11 @@ public class CurlToComponents {
 
     //Check if the url is what we send our data to.
     private static boolean isUrlDestination(String curl, int httpStart){
-        for(int x = httpStart; x > 0; x--) {
-            if (curl.charAt(x) == ' ' || curl.charAt(x) == '=') {
-                if(curl.charAt(x-1) != ':' && curl.charAt(x-1) != ' ') {
-                    return true;
-                }
+            if (curl.charAt(httpStart -1) == ' ' &&  curl.charAt(httpStart -2) != ':') {
+                return true;
+            } else {
+                return false;
             }
-        }
-        return false;
     }
 
     private static Range getDataRange(String curl) {
@@ -71,8 +69,8 @@ public class CurlToComponents {
 
         if(flagStart > -1 ) {
             char enclosingQuote = getEnclosingQuote(curl, flagStart);
-            dataStart = curl.indexOf(enclosingQuote, dataStart);
-            dataEnd = curl.indexOf(enclosingQuote);
+            dataStart = curl.indexOf(enclosingQuote, flagStart + 1);
+            dataEnd = curl.indexOf(enclosingQuote, dataStart + 1);
             if(dataEnd == -1) {
                 dataStart = -1;
             }

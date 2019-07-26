@@ -16,7 +16,7 @@ public class CurlToComponentsTest {
                 "curl -d \"param1=value1&param2=value2&param3=http://test.com\" " +
                         "-H 'Accept-Language: en-US,en;q=0.5' " +
                         "-H \"Content-Type: application/x-www-form-urlencoded\" " +
-                        "-H 'Referer: https://www.google.com/'" +
+                        "-H 'Referer: https://www.google.com/' " +
                         "-X POST " +
                         "http://localhost:3000/data");
 
