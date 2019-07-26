@@ -1,15 +1,16 @@
 package splitter;
 
 import component.Component;
+import component.ComponentType;
 
 import java.util.List;
 
 public class SeparatedStringComponentList {
     private String remainingCurl;
-    private Component.ComponentType componentType;
+    private ComponentType componentType;
     private List<Component> extractedComponent;
 
-    public SeparatedStringComponentList(final String remainingCurl, final Component.ComponentType componentType, final List<Component> extractedComponent) {
+    public SeparatedStringComponentList(final String remainingCurl, final ComponentType componentType, final List<Component> extractedComponent) {
         this.remainingCurl = remainingCurl;
         this.componentType = componentType;
         this.extractedComponent = extractedComponent;
@@ -19,7 +20,7 @@ public class SeparatedStringComponentList {
         return remainingCurl;
     }
 
-    public Component.ComponentType getComponentType() {
+    public ComponentType getComponentType() {
         return componentType;
     }
 

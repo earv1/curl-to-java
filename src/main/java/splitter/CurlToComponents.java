@@ -1,22 +1,23 @@
 package splitter;
 
 import component.Component;
+import component.ComponentType;
 
 import java.util.*;
 
 //curl -d "param1=value1&param2=value2&param3=http://test.com" -H "Content-Type: application/x-www-form-urlencoded" -X POST http://localhost:3000/data
 public class CurlToComponents {
-    public static Map<Component.ComponentType, List<Component>> extractComponents(String curl) {
-        Map<Component.ComponentType, List <Component>> componentMap = new HashMap<>();
+    public static Map<ComponentType, List<Component>> extractComponents(String curl) {
+        Map<ComponentType, List <Component>> componentMap = new HashMap<>();
 
         SeparatedStringComponentList currentSeparatedStringComponent = getRequestType(curl);
 
-        componentMap.computeIfAbsent(Component.ComponentType.REQUEST_TYPE, k -> new LinkedList<>());
-        componentMap.get(Component.ComponentType.REQUEST_TYPE)
+        componentMap.computeIfAbsent(ComponentType.REQUEST_TYPE, k -> new LinkedList<>());
+        componentMap.get(ComponentType.REQUEST_TYPE)
         .addAll(currentSeparatedStringComponent.getExtractedComponent());
 
-        componentMap.computeIfAbsent(Component.ComponentType.URL, k -> new LinkedList<>());
-        componentMap.get(Component.ComponentType.URL)
+        componentMap.computeIfAbsent(ComponentType.URL, k -> new LinkedList<>());
+        componentMap.get(ComponentType.URL)
                 .addAll(getUrlFromCurl(curl).getExtractedComponent());
 
         return componentMap;
@@ -43,7 +44,7 @@ public class CurlToComponents {
 
             return new SeparatedStringComponentList(
                     curlWithRangeRemoved(curl, range),
-                    Component.ComponentType.URL,
+                    ComponentType.URL,
                     Collections.singletonList(new Component(curl.substring(range.getValueStart(), range.getValueEnd()))));
         }
 
@@ -87,9 +88,9 @@ public class CurlToComponents {
     private static SeparatedStringComponentList getRequestType(String curl){
         Range dataRange = getDataRange(curl);
         if (dataRange.getValueStart() >0 || curl.contains("-X ") || curl.contains("--request ")) {
-            return new SeparatedStringComponentList(curlWithRangeRemoved(curl, dataRange), Component.ComponentType.REQUEST_TYPE, Collections.singletonList(new Component("POST")));
+            return new SeparatedStringComponentList(curlWithRangeRemoved(curl, dataRange), ComponentType.REQUEST_TYPE, Collections.singletonList(new Component("POST")));
         } else {
-            return new SeparatedStringComponentList(curl, Component.ComponentType.REQUEST_TYPE, Collections.singletonList(new Component("GET")));
+            return new SeparatedStringComponentList(curl, ComponentType.REQUEST_TYPE, Collections.singletonList(new Component("GET")));
         }
     }
 
