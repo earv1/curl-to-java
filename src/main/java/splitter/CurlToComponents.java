@@ -8,23 +8,57 @@ import java.util.*;
 //curl -d "param1=value1&param2=value2&param3=http://test.com" -H "Content-Type: application/x-www-form-urlencoded" -X POST http://localhost:3000/data
 public class CurlToComponents {
     public static Map<Component.ComponentType, List<Component>> extractComponents(String curl) {
-        Map<Component.ComponentType, List <Component>> componentMap = new DefaultedMap<>(new LinkedList<>());
+        Map<Component.ComponentType, List <Component>> componentMap = new HashMap<>();
+
         SeparatedStringComponentList currentSeparatedStringComponent = getRequestType(curl);
-        componentMap.get(currentSeparatedStringComponent.getComponentType())
+
+        componentMap.computeIfAbsent(Component.ComponentType.REQUEST_TYPE, k -> new LinkedList<>());
+        componentMap.get(Component.ComponentType.REQUEST_TYPE)
         .addAll(currentSeparatedStringComponent.getExtractedComponent());
 
-//        currentSeparatedStringComponent
-//        componentList.addAll(currentSeparatedStringComponent.getExtractedComponent());
+        componentMap.computeIfAbsent(Component.ComponentType.URL, k -> new LinkedList<>());
+        componentMap.get(Component.ComponentType.URL)
+                .addAll(getUrlFromCurl(curl).getExtractedComponent());
+
 
         return componentMap;
     }
 
-    private void getUrl(String curl){
-//        String regex
-//
-//        curl
-//        return new SeparatedStringComponent()
+    private static SeparatedStringComponentList getUrlFromCurl(String curl) {
+        int httpStart;
+        boolean found = false;
+        do {
+             httpStart = curl.indexOf("http://", 0);
+             found = isUrlDestination(curl, httpStart);
+        } while (!found);
 
+        if(!found) {
+            throw new RuntimeException("No destination address found");
+        } else {
+            char enclosingQuote = getEnclosingQuote(curl, httpStart);
+            int valueStart = curl.indexOf(enclosingQuote, httpStart);
+            int valueEnd = curl.indexOf(enclosingQuote, valueStart);
+
+            Range range = new Range(valueStart, valueStart, valueEnd);
+
+            return new SeparatedStringComponentList(
+                    curlWithRangeRemoved(curl, range),
+                    Component.ComponentType.URL,
+                    Collections.singletonList(new Component(curl.substring(range.getValueStart(), range.getValueEnd()))));
+        }
+
+    }
+
+    //Check if the url is what we send our data to.
+    private static boolean isUrlDestination(String curl, int httpStart){
+        for(int x = httpStart; x > 0; x--) {
+            if (curl.charAt(x) == ' ' || curl.charAt(x) == '=') {
+                if(curl.charAt(x-1) != ':' && curl.charAt(x-1) != ' ') {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static Range getDataRange(String curl) {
