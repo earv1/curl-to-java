@@ -13,11 +13,11 @@ public class CurlToComponents {
 
         componentMap.computeIfAbsent(ComponentType.REQUEST_TYPE, k -> new LinkedList<>());
         componentMap.get(ComponentType.REQUEST_TYPE)
-        .addAll(currentSeparatedStringComponent.getExtractedComponent());
+        .addAll(currentSeparatedStringComponent.getExtractedValues());
 
         componentMap.computeIfAbsent(ComponentType.URL, k -> new LinkedList<>());
         componentMap.get(ComponentType.URL)
-                .addAll(getUrlFromCurl(curl).getExtractedComponent());
+                .addAll(getUrlFromCurl(curl).getExtractedValues());
 
         return componentMap;
     }

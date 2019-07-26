@@ -7,12 +7,12 @@ import java.util.List;
 public class SeparatedStringComponentList {
     private String remainingCurl;
     private ComponentType componentType;
-    private List<String> extractedComponent;
+    private List<String> extractedValues;
 
-    public SeparatedStringComponentList(final String remainingCurl, final ComponentType componentType, final List<String> extractedComponent) {
+    public SeparatedStringComponentList(final String remainingCurl, final ComponentType componentType, final List<String> extractedValues) {
         this.remainingCurl = remainingCurl;
         this.componentType = componentType;
-        this.extractedComponent = extractedComponent;
+        this.extractedValues = extractedValues;
     }
 
     public String getRemainingCurl() {
@@ -23,7 +23,7 @@ public class SeparatedStringComponentList {
         return componentType;
     }
 
-    public List<String> getExtractedComponent() {
-        return extractedComponent;
+    public List<String> getExtractedValues() {
+        return extractedValues;
     }
 }
