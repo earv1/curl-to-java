@@ -1,7 +1,6 @@
 package splitter;
 
 import component.Component;
-import org.apache.commons.collections4.map.DefaultedMap;
 
 import java.util.*;
 

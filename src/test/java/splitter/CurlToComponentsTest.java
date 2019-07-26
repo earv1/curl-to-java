@@ -2,6 +2,10 @@ package splitter;
 
 import component.Component;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +29,15 @@ public class CurlToComponentsTest {
         assertEquals("POST", requestTypes.get(0).getValue());
 
         List<Component> urls = componentList.get(Component.ComponentType.URL);
-        assertEquals(1, requestTypes.size());
-        assertEquals("http://localhost:3000/data", requestTypes.get(0).getValue());
+        assertEquals(1, urls.size());
+        assertEquals("http://localhost:3000/data", urls.get(0).getValue());
+
+
+        String restTemplateBlock =
+                String.format(
+                "RestTemplate restTemplate = new RestTemplate();\n"+
+                        "HttpEntity<String> requestEntity = new HttpEntity<String>(\"\");\n" +
+                        "ResponseEntity<String> responseEntity = restTemplate.exchange(\"%s\", HttpMethod.%s, requestEntity, String.class);",
+                        requestTypes.get(0).getValue(), urls.get(0).getValue());
     }
 }
