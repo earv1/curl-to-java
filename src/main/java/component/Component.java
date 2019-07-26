@@ -8,10 +8,12 @@ public class Component {
         REQUEST_TYPE
     }
 
-    final ComponentType componentType;
     final String value;
-    public Component(ComponentType componentType, String value) {
-        this.componentType = componentType;
+    public Component(String value) {
         this.value = value;
+    }
+
+    public String getValue() {
+        return value;
     }
 }

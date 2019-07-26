@@ -1,24 +1,22 @@
 package splitter;
 
 import component.Component;
+import org.apache.commons.collections4.map.DefaultedMap;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 //curl -d "param1=value1&param2=value2&param3=http://test.com" -H "Content-Type: application/x-www-form-urlencoded" -X POST http://localhost:3000/data
 public class CurlToComponents {
-    public static List<Component> extractComponents(String curl) {
-        List <Component> componentList = new LinkedList<>();
+    public static Map<Component.ComponentType, List<Component>> extractComponents(String curl) {
+        Map<Component.ComponentType, List <Component>> componentMap = new DefaultedMap<>(new LinkedList<>());
         SeparatedStringComponentList currentSeparatedStringComponent = getRequestType(curl);
-        componentList.addAll(currentSeparatedStringComponent.getExtractedComponent());
+        componentMap.get(currentSeparatedStringComponent.getComponentType())
+        .addAll(currentSeparatedStringComponent.getExtractedComponent());
 
 //        currentSeparatedStringComponent
 //        componentList.addAll(currentSeparatedStringComponent.getExtractedComponent());
 
-        return componentList;
-
-
+        return componentMap;
     }
 
     private void getUrl(String curl){
@@ -49,9 +47,9 @@ public class CurlToComponents {
     private static SeparatedStringComponentList getRequestType(String curl){
         Range dataRange = getDataRange(curl);
         if (dataRange.getValueStart() >0 || curl.contains("-X ") || curl.contains("--request ")) {
-            return new SeparatedStringComponentList(curlWithRangeRemoved(curl, dataRange), Collections.singletonList(new Component(Component.ComponentType.REQUEST_TYPE, "POST")));
+            return new SeparatedStringComponentList(curlWithRangeRemoved(curl, dataRange), Component.ComponentType.REQUEST_TYPE, Collections.singletonList(new Component("POST")));
         } else {
-            return new SeparatedStringComponentList(curl, Collections.singletonList(new Component(Component.ComponentType.REQUEST_TYPE, "GET")));
+            return new SeparatedStringComponentList(curl, Component.ComponentType.REQUEST_TYPE, Collections.singletonList(new Component("GET")));
         }
     }
 
