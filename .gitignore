@@ -5,3 +5,7 @@ gradlew
 gradlew.bat
 
 .idea
+
+*.class
+*.bin
+*.bin.idx
