@@ -8,3 +8,11 @@ repositories {
 dependencies {
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.4.0'
 }
+
+
+   test {
+       filter {
+          //specific test class, this can match 'SomeTest' class and corresponding method under any package
+          includeTestsMatching "*Test*"
+       }
+   }
