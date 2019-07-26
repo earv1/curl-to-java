@@ -36,13 +36,22 @@ public class CurlToComponents {
         flagStart = flagStart> -1 ? flagStart : curl.indexOf("--data ");
 
         if(flagStart > -1 ) {
-            dataStart = curl.indexOf("\"", dataStart);
-            dataEnd = curl.indexOf("\"");
+            char enclosingQuote = getEnclosingQuote(curl, flagStart);
+            dataStart = curl.indexOf(enclosingQuote, dataStart);
+            dataEnd = curl.indexOf(enclosingQuote);
             if(dataEnd == -1) {
                 dataStart = -1;
             }
         }
         return new Range(flagStart, dataStart, dataEnd);
+    }
+
+    private static char getEnclosingQuote(String curl, int start) {
+        int doubleQuoteStart = curl.indexOf("\"", start);
+        int singleQuoteStart = curl.indexOf("'", start);
+
+        return doubleQuoteStart < singleQuoteStart ? '\"'  : '\'';
+
     }
     private static SeparatedStringComponentList getRequestType(String curl){
         Range dataRange = getDataRange(curl);
