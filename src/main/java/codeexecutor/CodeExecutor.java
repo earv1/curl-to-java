@@ -51,7 +51,12 @@ public class CodeExecutor {
                     "return " + variableToGrabOutputFrom + ";"+
                     "   }\n" +
                     "}";
-            String formattedSource = new Formatter().formatSource(source);
+            String formattedSource = null;
+            try {
+                formattedSource = new Formatter().formatSource(source);
+            } catch (FormatterException e) {
+                formattedSource = source;
+            }
             PrintWriter printWriter= new PrintWriter(javaFile);
             printWriter.println(formattedSource);
             printWriter.close();
@@ -67,7 +72,7 @@ public class CodeExecutor {
             deleteCodeFilesIfExists();
             return output;
 
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | FileNotFoundException | MalformedURLException | FormatterException e) {
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | FileNotFoundException | MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
