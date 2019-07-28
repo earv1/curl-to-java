@@ -30,7 +30,6 @@ public class Main {
                             "ResponseEntity<String> responseEntity = restTemplate.exchange(\"%s\", HttpMethod.%s, requestEntity, String.class);\n",
                     url, requestType);
 
-
             String restResponse = codeExecutor.runCode("Testing12345", codeTemplate, restTemplateBlock, "String", "responseEntity.getBody()");
             String tests = JsonToTests.jsonToTests(restResponse);
 
@@ -40,11 +39,7 @@ public class Main {
                             jsonNodeConversionBlock +
                             tests;
 
-
-
-
             String output = codeExecutor.runCode(UrlToClassName.urlToClassName(url), codeTemplate,  fullCodeBlockWithTests, "boolean", "true");
-
 
             if(!output.equals("success")) {
                 throw new RuntimeException("The following curl failed: " + curl);
