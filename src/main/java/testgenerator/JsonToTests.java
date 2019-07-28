@@ -5,52 +5,41 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map;
 
 public class JsonToTests {
 
     final static ObjectMapper mapper = new ObjectMapper(); // create once, reuse
 
-    public static void jsonToTest(String json) {
+    public static String jsonToTests(String json) {
 
         try {
             JsonNode jsonNode = mapper.readValue(json, JsonNode.class);
-            jsonToTest(jsonNode, "jsonNode");
+            return jsonToTests(jsonNode, "jsonNode", null);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
-    private static String jsonToTest(JsonNode jsonNode, String parentNodeSelector) {
-//            if(jsonNode.get(0).get("id").asInt() != 1) {
-//                return "";
-//            }
-//
-//            if(!jsonNode.get(0).get("name").asText().equals("Leanne Graham")) {
-//                return "";
-//            }
-//
-//            if(!jsonNode.get(0).get("address").get("street").asText().equals("Kulas Light")) {
-//                return "";
-//            }
-
+    private static String jsonToTests(JsonNode jsonNode, String parentNodeSelector, String fieldName) {
             String generatedCodeString = "";
             if(jsonNode.isArray()) {
                 int jsonElementIndex = 0;
                 for(JsonNode jsonNodeElement: jsonNode) {
-                   generatedCodeString += jsonToTest(jsonNode, parentNodeSelector + ".get(" + jsonElementIndex + ")");
+                   generatedCodeString += jsonToTests(jsonNodeElement, parentNodeSelector + ".get(" + jsonElementIndex + ")", null);
                    jsonElementIndex ++;
                 }
-            } else if (jsonNode.isValueNode()) {
-                Iterator<JsonNode> elements = jsonNode.elements();
+            } else if (!jsonNode.isValueNode()) {
+                Iterator<Map.Entry<String, JsonNode>> elements = jsonNode.fields();
                 while(elements.hasNext()) {
-                    JsonNode element = elements.next();
-                    generatedCodeString += jsonToTest(element, parentNodeSelector) + "\n";
+                    Map.Entry<String, JsonNode> entry = elements.next();
+                    JsonNode element = entry.getValue();
+                    generatedCodeString += jsonToTests(element, parentNodeSelector, entry.getKey()) + "\n";
                 }
             } else {
                 generatedCodeString +=
                         "if (!(" +
-                                "" +getConversionString(jsonNode) + getConversionString(jsonNode) +
-                                "" +generateEquals(jsonNode) + ")) {\n" +
+                                parentNodeSelector + ".get(\"" + fieldName + "\")" + getConversionString(jsonNode) + generateEquals(jsonNode) + ")) {\n" +
                                 "   return false;\n" +
                                 "}";
             }
@@ -61,11 +50,11 @@ public class JsonToTests {
         if(jsonNode.isTextual()){
             return ".equals(\"" + jsonNode.textValue() + "\")";
         } else if(jsonNode.isBoolean()) {
-            return " == " + jsonNode.textValue();
+            return " == " + jsonNode.booleanValue();
         } else if (jsonNode.isDouble()) {
-            return " == " + jsonNode.textValue();
+            return " == " + jsonNode.doubleValue();
         } else if (jsonNode.isInt()) {
-            return " == " + jsonNode.textValue();
+            return " == " + jsonNode.intValue();
         } else {
             return "UNKNOWN CONVERSION";
         }
