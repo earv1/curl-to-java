@@ -15,18 +15,18 @@ public class JsonToTests {
 
         try {
             JsonNode jsonNode = mapper.readValue(json, JsonNode.class);
-            return jsonToTests(jsonNode, "jsonNode", null);
+            return jsonToTests(jsonNode, "jsonNode", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static String jsonToTests(JsonNode jsonNode, String parentNodeSelector, String fieldName) {
+    private static String jsonToTests(JsonNode jsonNode, String parentNodeSelector, String fieldNameSelector) {
             String generatedCodeString = "";
             if(jsonNode.isArray()) {
                 int jsonElementIndex = 0;
                 for(JsonNode jsonNodeElement: jsonNode) {
-                   generatedCodeString += jsonToTests(jsonNodeElement, parentNodeSelector + ".get(" + jsonElementIndex + ")", null);
+                   generatedCodeString += jsonToTests(jsonNodeElement, parentNodeSelector + ".get(" + jsonElementIndex + ")", "");
                    jsonElementIndex ++;
                 }
             } else if (!jsonNode.isValueNode()) {
@@ -34,12 +34,12 @@ public class JsonToTests {
                 while(elements.hasNext()) {
                     Map.Entry<String, JsonNode> entry = elements.next();
                     JsonNode element = entry.getValue();
-                    generatedCodeString += jsonToTests(element, parentNodeSelector, entry.getKey()) + "\n";
+                    generatedCodeString += jsonToTests(element, parentNodeSelector + fieldNameSelector, ".get(\"" + entry.getKey() + "\")") + "\n";
                 }
             } else {
                 generatedCodeString +=
                         "if (!(" +
-                                parentNodeSelector + ".get(\"" + fieldName + "\")" + getConversionString(jsonNode) + generateEquals(jsonNode) + ")) {\n" +
+                                parentNodeSelector + fieldNameSelector + getConversionString(jsonNode) + generateEquals(jsonNode) + ")) {\n" +
                                 "   return false;\n" +
                                 "}";
             }

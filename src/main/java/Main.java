@@ -1,6 +1,6 @@
 public class Main {
     public static void main (String [] args) throws Exception {
-        Test.execute();
+        Test2.execute();
     }
 
 

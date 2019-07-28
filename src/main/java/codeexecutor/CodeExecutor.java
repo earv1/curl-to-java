@@ -21,8 +21,23 @@ public class CodeExecutor {
         this.imports = imports;
     }
 
+
+    public void deleteCodeFilesIfExists() {
+        File javaFile = new File(FILE_NAME + ".java");
+        if(javaFile.exists()){
+            javaFile.delete();
+        }
+
+        File classFile = new File(FILE_NAME + ".class");
+        if(classFile.exists()){
+            classFile.delete();
+        }
+
+    }
     public String runCode(String codeToExecute, String returnType, String variableToGrabOutputFrom) {
         try {
+            deleteCodeFilesIfExists();
+
             JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
             StandardJavaFileManager standardFileManager = jc.getStandardFileManager(null, null, null);
             File javaFile = new File(FILE_NAME + ".java"); //create file in current working directory
@@ -49,8 +64,7 @@ public class CodeExecutor {
             URLClassLoader ucl = new URLClassLoader(urls);
             Object object = ucl.loadClass(FILE_NAME).newInstance();
             String output = object.getClass().getDeclaredMethod("execute").invoke(object).toString();
-            new File(FILE_NAME + ".class").delete();
-            javaFile.delete();
+            deleteCodeFilesIfExists();
             return output;
 
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | FileNotFoundException | MalformedURLException | FormatterException e) {
