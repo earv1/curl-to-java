@@ -5,17 +5,17 @@ import splitter.CurlToComponents;
 import testgenerator.JsonToTests;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Main {
     private static CodeExecutor codeExecutor = new CodeExecutor();
     public static void main (String [] args) throws Exception {
-        String inputFilename = args[0];
+        String inputFilename = "curls.txt";
+        if(args.length > 0) {
+            inputFilename = args[0];
+        }
         String [] curlArray = Files.readString(Paths.get(inputFilename)).split("[\n|\r]");
         String codeTemplate = Files.readString(Paths.get("template/Default/java"));
 
@@ -45,8 +45,6 @@ public class Main {
                 throw new RuntimeException("The following curl failed: " + curl);
             }
         }
-
-        Test2.execute();
     }
 
 
