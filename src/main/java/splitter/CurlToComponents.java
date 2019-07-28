@@ -86,7 +86,8 @@ public class CurlToComponents {
     }
     private static SeparatedStringComponentList getRequestType(String curl){
         Range dataRange = getDataRange(curl);
-        if (dataRange.getValueStart() >0 || curl.contains("-X ") || curl.contains("--request ")) {
+        if ((dataRange.getValueStart() > 0 || curl.contains("-X POST") || curl.contains("--request POST")) &&
+                !curl.contains("-X GET") && !curl.contains("--request GET")) {
             return new SeparatedStringComponentList(curlWithRangeRemoved(curl, dataRange), ComponentType.REQUEST_TYPE, Collections.singletonList("POST"));
         } else {
             return new SeparatedStringComponentList(curl, ComponentType.REQUEST_TYPE, Collections.singletonList("GET"));

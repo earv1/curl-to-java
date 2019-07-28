@@ -11,7 +11,7 @@ import java.net.URLClassLoader;
 
 public class CodeExecutor {
     private static String fileName = "Test";
-    public static void runCode(String codeToExecute, String variableToGrabOutputFrom) {
+    public static String runCode(String codeToExecute, String variableToGrabOutputFrom) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(baos);
@@ -48,7 +48,7 @@ public class CodeExecutor {
             Object object = ucl.loadClass(fileName).newInstance();
             StringBuffer output = new StringBuffer("");
             object.getClass().getDeclaredMethod("execute", output.getClass()).invoke(object, output);
-            System.out.println(output);
+            return output.toString();
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | FileNotFoundException | MalformedURLException e) {
             throw new RuntimeException(e);
         }
