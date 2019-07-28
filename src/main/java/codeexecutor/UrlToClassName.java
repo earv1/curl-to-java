@@ -7,7 +7,10 @@ import java.util.stream.Collectors;
 public class UrlToClassName {
     public static String urlToClassName(String url) {
         url = url.replace("https://", "");
-        url = url.substring(0, url.indexOf('?'));
+
+        if(url.contains("?")){
+            url = url.substring(0, url.indexOf('?'));
+        }
 
         List<Character> urlCharList =  url.chars().mapToObj(c -> (char) c).collect(Collectors.toList());
         urlCharList.set(0, Character.toUpperCase(urlCharList.get(0)));

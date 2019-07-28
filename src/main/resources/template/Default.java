@@ -14,10 +14,10 @@ public class {class-name} {
     final static ObjectMapper mapper = new ObjectMapper();
 
 
-    public static boolean execute() throws Exception {
+    public static {return-type} execute() throws Exception {
         {main-logic}
 
-        return true;
+        return {return-variable};
     }
 }
 

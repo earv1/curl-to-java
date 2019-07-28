@@ -5,6 +5,7 @@ import splitter.CurlToComponents;
 import testgenerator.JsonToTests;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -12,12 +13,11 @@ import java.util.Map;
 public class Main {
     private static CodeExecutor codeExecutor = new CodeExecutor();
     public static void main (String [] args) throws Exception {
-        String inputFilename = "curls.txt";
-        if(args.length > 0) {
-            inputFilename = args[0];
-        }
-        String [] curlArray = Files.readString(Paths.get(inputFilename)).split("[\n|\r]");
-        String codeTemplate = Files.readString(Paths.get("template/Default/java"));
+        Path curlsPath = Paths.get(ClassLoader.getSystemResource("curls.txt").toURI());
+        String [] curlArray = Files.readString(curlsPath).split("[\n|\r]");
+
+        Path templatePath = Paths.get(ClassLoader.getSystemResource("template/Default.java").toURI());
+        String codeTemplate = Files.readString(templatePath);
 
         for (String curl: curlArray) {
             Map<ComponentType, List<String>> componentList = CurlToComponents.extractComponents(curl);
@@ -41,7 +41,7 @@ public class Main {
 
             String output = codeExecutor.runCode(UrlToClassName.urlToClassName(url), codeTemplate,  fullCodeBlockWithTests, "boolean", "true");
 
-            if(!output.equals("success")) {
+            if(!output.equals("true")) {
                 throw new RuntimeException("The following curl failed: " + curl);
             }
         }
