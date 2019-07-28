@@ -48,7 +48,10 @@ public class CodeExecutor {
             Object object = ucl.loadClass(fileName).newInstance();
             StringBuffer output = new StringBuffer("");
             object.getClass().getDeclaredMethod("execute", output.getClass()).invoke(object, output);
+            new File(fileName + ".class").delete();
+            javaFile.delete();
             return output.toString();
+
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | FileNotFoundException | MalformedURLException e) {
             throw new RuntimeException(e);
         }
