@@ -7,6 +7,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import testgenerator.JsonToTests;
 
 
 import java.util.List;
@@ -45,6 +46,8 @@ public class CurlToComponentsTest {
         ResponseEntity<String> responseEntity = restTemplate.exchange("https://jsonplaceholder.typicode.com/users", HttpMethod.GET, requestEntity, String.class);
 
         String restResponse = CodeExecutor.runCode(restTemplateBlock, "responseEntity.getBody()");
+
+//        JsonToTests.jsonToTest(restResponse);
     }
 
     @Test
