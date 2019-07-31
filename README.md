@@ -4,7 +4,7 @@ I really wanted something that could take a curl and turn into a spring Spring r
 
 
 ## How to Use
-Add your curls in resources/curls.txt and run Main.java
+Add your curls in resources/curls.txt and `gradle run`
 
 ## Requirements
 Java 9+

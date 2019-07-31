@@ -1,9 +1,12 @@
 apply plugin: 'idea'
 apply plugin: 'java'
+apply plugin: 'application'
 
 repositories {
    mavenCentral()
 }
+
+mainClassName = 'Main'
 
 dependencies {
     compile group: 'org.springframework', name: 'spring-web', version: '3.0.2.RELEASE'
