@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 public class UrlToClassName {
     public static String urlToClassName(String url) {
         url = url.replace("https://", "");
+        url = url.replace("http://", "");
 
         if(url.contains("?")){
             url = url.substring(0, url.indexOf('?'));
