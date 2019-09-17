@@ -1,6 +1,11 @@
 import codeexecutor.CodeExecutor;
 import codeexecutor.UrlToClassName;
 import component.ComponentType;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 import splitter.CurlToComponents;
 import testgenerator.JsonToTests;
 
@@ -30,14 +35,19 @@ public class Main {
 
             String addHeaderCode = "";
             for (String header: componentList.get(ComponentType.HEADER)) {
-                String [] headerComponents = header.split(":");
+                String [] headerComponents = header.split(":", 2);
                 addHeaderCode += "headers.add(\"" + headerComponents[0] + "\", \"" + headerComponents[1] + "\"); \n";
             }
-
+            List<String> dataList = componentList.get(ComponentType.DATA);
+            String data = "";
+            if(dataList.size() > 0) {
+                data = dataList.get(0).replace("\"", "\\\"");
+            }
             String restTemplateBlock = String.format(
                     "HttpHeaders headers = new HttpHeaders(); \n " +
                             addHeaderCode +
-                    "HttpEntity<String> requestEntity = new HttpEntity<String>(\"\", headers);\n" +
+                    "HttpEntity<String> requestEntity = new HttpEntity<String>(\"" + data + "\", " +
+                            "headers);\n" +
                             "ResponseEntity<String> responseEntity = restTemplate.exchange(\"%s\", HttpMethod.%s, requestEntity, String.class);\n",
                     url, requestType);
 

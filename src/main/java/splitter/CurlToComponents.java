@@ -87,7 +87,7 @@ public class CurlToComponents {
         int httpStart = 0;
         boolean found = false;
         do {
-             httpStart = curl.indexOf("http", httpStart + 1);
+            httpStart = curl.indexOf("http", httpStart + 1);
              found = isUrlDestination(curl, httpStart);
         } while (!found);
 

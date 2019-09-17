@@ -37,12 +37,12 @@ public class JsonToTests {
                     generatedCodeString += jsonToTests(element, parentNodeSelector + fieldNameSelector, ".get(\"" + entry.getKey() + "\")") + "\n";
                 }
             } else {
-                String equalsSelector = parentNodeSelector + fieldNameSelector + getConversionString(jsonNode) + generateEquals(jsonNode);
+                String equalsSelector = parentNodeSelector + fieldNameSelector.replace("\n", "\\n") + getConversionString(jsonNode) + generateEquals(jsonNode);
 
                 generatedCodeString +=
                         "if (!(" +
                                 equalsSelector + ")) {\n" +
-                                "   logger.error(\"" + equalsSelector.replace("\"", "\\\"") + ", is returning false \"); \n" +
+                                "   logger.error(\"" + equalsSelector.replace("\\", "\\\\") .replace("\"", "\\\"") + ", is returning false \"); \n" +
                                 "   return false;\n" +
                                 "}";
             }
@@ -51,7 +51,7 @@ public class JsonToTests {
 
     public static String generateEquals(JsonNode jsonNode) {
         if(jsonNode.isTextual()){
-            return ".equals(\"" + jsonNode.textValue() + "\")";
+            return ".equals(\"" + jsonNode.textValue().replace("\n", "\\n") + "\")";
         } else if(jsonNode.isBoolean()) {
             return " == " + jsonNode.booleanValue();
         } else if (jsonNode.isDouble()) {
