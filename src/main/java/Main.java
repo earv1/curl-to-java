@@ -29,8 +29,8 @@ public class Main {
             for (String header: componentList.get(ComponentType.HEADER)) {
                 String [] headerComponents = header.split(":");
                 addHeaderCode += "headers.add(\"" + headerComponents[0] + "\", \"" + headerComponents[1] + "\"); \n";
-                //headers.add();
             }
+
             String restTemplateBlock = String.format(
                     "HttpHeaders headers = new HttpHeaders(); \n " +
                             addHeaderCode +
