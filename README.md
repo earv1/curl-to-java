@@ -3,7 +3,7 @@
 <br />
 
 ## Description
-I really wanted something that could take a curl and turn into a spring Spring rest template. I then realized that I could also generate checks for telemetry, in order to make sure that systems are behaving as expected. This is the result!
+Generate java requests and tests from curls
 
 ## How to Use
 Add your curls in resources/curls.txt and `gradle run`
@@ -15,7 +15,7 @@ Java 9+
 Curl to java works by generating taking a curl request, and generating java code with tests out of it.
 
 Specifically, it performs the following steps
-1. Transform curl request into generated java http request
+1. Transform curl request into generated restTemplate request
 2. Run generated java code and get json response.
 3. Generate more code, specifically tests from json response.
 4. Run all the code together and see if the tests pass
