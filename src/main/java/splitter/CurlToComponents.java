@@ -1,5 +1,6 @@
 package splitter;
 
+import com.google.common.collect.ImmutableList;
 import component.ComponentType;
 
 import java.util.*;
@@ -11,6 +12,10 @@ public class CurlToComponents {
 
         SeparatedStringComponentList currentSeparatedStringComponent = getRequestType(curl);
 
+        componentMap.computeIfAbsent(ComponentType.HEADER, k -> new LinkedList<>());
+        componentMap.get(ComponentType.HEADER)
+                .addAll(getHeadersFromCurl(curl));
+
         componentMap.computeIfAbsent(ComponentType.REQUEST_TYPE, k -> new LinkedList<>());
         componentMap.get(ComponentType.REQUEST_TYPE)
         .addAll(currentSeparatedStringComponent.getExtractedValues());
@@ -19,7 +24,49 @@ public class CurlToComponents {
         componentMap.get(ComponentType.URL)
                 .addAll(getUrlFromCurl(curl).getExtractedValues());
 
+
         return componentMap;
+    }
+
+
+    private static List<String> getHeadersFromCurl(String curl) {
+        List<String> headers = new ArrayList<>();
+
+        do {
+            Range dataRange = getArgumentDataRange(curl, ImmutableList.of("-H", "--header"));
+
+            if(dataRange.getFlagStart() > -1 && dataRange.getValueStart() > -1 && dataRange.getValueEnd() > -1) {
+                headers.add(curl.substring(dataRange.getValueStart(), dataRange.getValueEnd()));
+                curl = curlWithRangeRemoved(curl, dataRange);
+            } else {
+                break;
+            }
+        } while (true);
+        return headers;
+    }
+
+    private static Range getArgumentDataRange(String curl, List<String> argumentSynonyms) {
+        int flagStart = -1;
+        int dataStart = -1;
+        int dataEnd = -1;
+
+        for(String argumentSynonym: argumentSynonyms) {
+            flagStart = flagStart> -1 ? flagStart : curl.indexOf(argumentSynonym);
+        }
+
+        if(flagStart > -1 ) {
+            char enclosingQuote = getEnclosingQuote(curl, flagStart);
+            dataStart = curl.indexOf(enclosingQuote, flagStart + 1);
+            dataEnd = curl.indexOf(enclosingQuote, dataStart + 1);
+            if(dataEnd == -1) {
+                dataStart = -1;
+            }
+        }
+        return new Range(flagStart, dataStart, dataEnd);
+    }
+
+    private static Range getDataRange(String curl) {
+        return getArgumentDataRange(curl, ImmutableList.of("-d", "--data-", "--data"));
     }
 
     private static SeparatedStringComponentList getUrlFromCurl(String curl) {
@@ -58,32 +105,22 @@ public class CurlToComponents {
             }
     }
 
-    private static Range getDataRange(String curl) {
-        int flagStart = -1;
-        int dataStart = -1;
-        int dataEnd = -1;
-        flagStart = flagStart> -1 ? flagStart : curl.indexOf("-d");
-        flagStart = flagStart> -1 ? flagStart : curl.indexOf("--data-");
-        flagStart = flagStart> -1 ? flagStart : curl.indexOf("--data ");
-
-        if(flagStart > -1 ) {
-            char enclosingQuote = getEnclosingQuote(curl, flagStart);
-            dataStart = curl.indexOf(enclosingQuote, flagStart + 1);
-            dataEnd = curl.indexOf(enclosingQuote, dataStart + 1);
-            if(dataEnd == -1) {
-                dataStart = -1;
-            }
-        }
-        return new Range(flagStart, dataStart, dataEnd);
-    }
-
-    private static char getEnclosingQuote(String curl, int start) {
+    public static char getEnclosingQuote(String curl, int start) {
         int doubleQuoteStart = curl.indexOf("\"", start);
         int singleQuoteStart = curl.indexOf("'", start);
+
+        if(doubleQuoteStart == -1) {
+            doubleQuoteStart = Integer.MAX_VALUE;
+        }
+
+        if(singleQuoteStart == -1) {
+            singleQuoteStart = Integer.MAX_VALUE;
+        }
 
         return doubleQuoteStart < singleQuoteStart ? '\"'  : '\'';
 
     }
+
     private static SeparatedStringComponentList getRequestType(String curl){
         Range dataRange = getDataRange(curl);
         if ((dataRange.getValueStart() > 0 || curl.contains("-X POST") || curl.contains("--request POST")) &&
@@ -95,7 +132,11 @@ public class CurlToComponents {
     }
 
     private static String curlWithRangeRemoved(final String curl, final Range range) {
-        return curl.replace(curl, curl.substring(range.getFlagStart(), range.getValueEnd()));
+        int valueEnd = range.getValueEnd() + 1;
+        if(valueEnd > curl.length()) {
+            valueEnd--;
+        }
+        return curl.replace(curl.substring(range.getFlagStart(), valueEnd), "");
     }
 
 }

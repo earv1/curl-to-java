@@ -4,10 +4,6 @@ import codeexecutor.CodeExecutor;
 import component.ComponentType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 import testgenerator.JsonToTests;
 
 
@@ -42,6 +38,10 @@ public class CurlToComponentsTest {
         List<String> urls = componentList.get(ComponentType.URL);
         assertEquals(1, urls.size());
         assertEquals("https://jsonplaceholder.typicode.com/users", urls.get(0));
+
+        List<String> headers = componentList.get(ComponentType.HEADER);
+        assertEquals(3, headers.size());
+
         String restTemplateBlock = String.format(
                         "HttpEntity<String> requestEntity = new HttpEntity<String>(\"\");\n" +
                         "ResponseEntity<String> responseEntity = restTemplate.exchange(\"%s\", HttpMethod.%s, requestEntity, String.class);\n",
@@ -60,6 +60,7 @@ public class CurlToComponentsTest {
         String output = codeExecutor.runCode("GeneratedTestCode", codeExecutor.getContainingClass(), fullCodeBlockWithTests, "boolean", "success");
 
         assertEquals("true",  output);
+
     }
 
     @Test
@@ -76,5 +77,16 @@ public class CurlToComponentsTest {
         assertEquals(1, requestTypes.size());
         assertEquals("POST", requestTypes.get(0));
 
+        List<String> headers = componentList.get(ComponentType.HEADER);
+        assertEquals(3, headers.size());
+    }
+
+    @Test
+    public void enclosingQuoteTest() throws Exception {
+        char enclosingQuote = CurlToComponents.getEnclosingQuote(
+                "curl -d \"param1=value1&param2=value2&param3=http://test.com\" ' \" -H 'Referer: https://www.google.com/' -X POST https://jsonplaceholder.typicode.com/users",
+                65);
+
+        assertEquals('\'', enclosingQuote);
     }
 }
