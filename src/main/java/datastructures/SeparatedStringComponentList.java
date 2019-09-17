@@ -1,4 +1,4 @@
-package splitter;
+package datastructures;
 
 import datastructures.ComponentType;
 

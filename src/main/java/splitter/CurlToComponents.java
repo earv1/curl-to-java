@@ -2,6 +2,7 @@ package splitter;
 
 import com.google.common.collect.ImmutableList;
 import datastructures.ComponentType;
+import datastructures.SeparatedStringComponentList;
 
 import java.util.*;
 
