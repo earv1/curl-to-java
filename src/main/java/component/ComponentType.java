@@ -3,6 +3,6 @@ package component;
 public enum ComponentType {
     HEADER,
     URL,
-    PAYLOAD,
+    DATA,
     REQUEST_TYPE
 }

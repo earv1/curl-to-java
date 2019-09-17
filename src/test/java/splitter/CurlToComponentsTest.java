@@ -79,6 +79,11 @@ public class CurlToComponentsTest {
 
         List<String> headers = componentList.get(ComponentType.HEADER);
         assertEquals(3, headers.size());
+
+        List<String> dataList = componentList.get(ComponentType.DATA);
+        assertEquals(1, dataList.size());
+
+
     }
 
     @Test

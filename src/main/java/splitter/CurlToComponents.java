@@ -24,8 +24,22 @@ public class CurlToComponents {
         componentMap.get(ComponentType.URL)
                 .addAll(getUrlFromCurl(curl).getExtractedValues());
 
+        componentMap.computeIfAbsent(ComponentType.DATA, k -> new LinkedList<>());
+        componentMap.get(ComponentType.DATA)
+                .addAll(getPostDataFromCurl(curl));
 
         return componentMap;
+    }
+
+
+    private static List<String> getPostDataFromCurl(String curl) {
+        Range dataRange = getDataRange(curl);
+        List<String> dataRangeList = new ArrayList<>();
+
+            if(dataRange.getFlagStart() > -1 && dataRange.getValueStart() > -1 && dataRange.getValueEnd() > -1) {
+                dataRangeList.add(curl.substring(dataRange.getValueStart() + 1, dataRange.getValueEnd()));
+            }
+        return dataRangeList;
     }
 
 
