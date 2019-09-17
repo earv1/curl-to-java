@@ -59,15 +59,12 @@ public class CodeExecutor {
                 .replace("{return-variable}", variableToGrabOutputFrom);
     }
 
-    public String runCode(String fileName, String source, String mainLogic, String returnType, String variableToGrabOutputFrom) {
+    public File generateCode(String fileName, String source, String mainLogic, String returnType, String variableToGrabOutputFrom) {
         try {
             deleteCodeFilesIfExists(fileName);
+            File generatedJavaFile = new File("tmp/" + fileName + ".java"); //create file in tmp directory, located in current working directory
 
-            JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
-            StandardJavaFileManager standardFileManager = jc.getStandardFileManager(null, null, null);
-            File javaFile = new File("tmp/" + fileName + ".java"); //create file in tmp directory, located in current working directory
-
-            File javaFileParentFile = javaFile.getParentFile();
+            File javaFileParentFile = generatedJavaFile.getParentFile();
             javaFileParentFile.mkdirs();
 
             source = getClassWithPlaceHolders(fileName, source, mainLogic, returnType, variableToGrabOutputFrom);
@@ -78,20 +75,35 @@ public class CodeExecutor {
             } catch (FormatterException e) {
                 formattedSource = source;
             }
-            PrintWriter printWriter= new PrintWriter(javaFile);
+            PrintWriter printWriter = new PrintWriter(generatedJavaFile);
             printWriter.println(formattedSource);
             printWriter.close();
+            return generatedJavaFile;
 
-            Iterable standardFileManagerJavaFileObjects = standardFileManager.getJavaFileObjects(javaFile);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String runCode(String fileName, String source, String mainLogic, String returnType, String variableToGrabOutputFrom) {
+        try {
+            JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
+            StandardJavaFileManager standardFileManager = jc.getStandardFileManager(null, null, null);
+
+            File generatedJavaFile = generateCode(fileName, source, mainLogic, returnType, variableToGrabOutputFrom);
+            File generatedJavaFileParentFile = generatedJavaFile.getParentFile();
+
+
+            Iterable standardFileManagerJavaFileObjects = standardFileManager.getJavaFileObjects(generatedJavaFile);
             if (!jc.getTask(null, standardFileManager, null, null, null, standardFileManagerJavaFileObjects).call()) { //compile the code
                 throw new RuntimeException("compilation failed");
             }
-            URL[] urls = new URL[]{javaFileParentFile.toURI().toURL()}; //Use the folder that the source file is located in
+            URL[] urls = new URL[]{generatedJavaFileParentFile.toURI().toURL()}; //Use the folder that the source file is located in
             URLClassLoader ucl = new URLClassLoader(urls);
             Object object = ucl.loadClass(fileName).newInstance();
             return object.getClass().getDeclaredMethod("execute").invoke(object).toString();
 
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | FileNotFoundException | MalformedURLException e) {
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
