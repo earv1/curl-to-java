@@ -18,7 +18,8 @@ public class UrlToClassName {
 
         int nameCharListSize = urlCharList.size();
         for (int characterPos = 0; characterPos < nameCharListSize; characterPos++) {
-            if(urlCharList.get(characterPos) == '.' || urlCharList.get(characterPos) == '/') {
+            //Skip characters if they match the following
+            if(urlCharList.get(characterPos) == '.' || urlCharList.get(characterPos) == '/' || urlCharList.get(characterPos) == '-') {
                 if(characterPos +1 < nameCharListSize) {
                     urlCharList.set(characterPos+1, Character.toUpperCase(urlCharList.get(characterPos+1)));
                     urlCharList.remove(characterPos);

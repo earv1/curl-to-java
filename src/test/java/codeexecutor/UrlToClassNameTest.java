@@ -20,4 +20,18 @@ class UrlToClassNameTest {
         assertEquals("JsonplaceholderTypicodeComUsers", className);
     }
 
+    @Test
+    public void urlToClassNameTestWithDashes() {
+        String url = "https://jsonplace-holder.typicode.com/users";
+        String className = UrlToClassName.urlToClassName(url);
+        assertEquals("JsonplaceHolderTypicodeComUsers", className);
+    }
+
+    @Test
+    public void urlToClassNameTestHttp() {
+        String url = "http://jsonplaceholder.typicode.com/users";
+        String className = UrlToClassName.urlToClassName(url);
+        assertEquals("JsonplaceholderTypicodeComUsers", className);
+    }
+
 }
