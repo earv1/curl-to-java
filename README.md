@@ -3,7 +3,7 @@
 <br />
 
 ## Description
-Generate java requests from curls
+Generate java requests and tests from curls
 
 ## How to Use
 Add your curls in resources/curls.txt and `gradle run`
