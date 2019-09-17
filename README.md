@@ -23,4 +23,4 @@ Specifically, it performs the following steps
 ## Features
 1. Transforms a curl into a java http request
 2. Generates tests to make sure the response is the same each time
-3. Can change output with templates
+3. Can customise generated code with templates
