@@ -36,7 +36,7 @@ public class CurlToComponents {
             Range dataRange = getArgumentDataRange(curl, ImmutableList.of("-H", "--header"));
 
             if(dataRange.getFlagStart() > -1 && dataRange.getValueStart() > -1 && dataRange.getValueEnd() > -1) {
-                headers.add(curl.substring(dataRange.getValueStart(), dataRange.getValueEnd()));
+                headers.add(curl.substring(dataRange.getValueStart() + 1, dataRange.getValueEnd()));
                 curl = curlWithRangeRemoved(curl, dataRange);
             } else {
                 break;
@@ -136,7 +136,7 @@ public class CurlToComponents {
         if(valueEnd > curl.length()) {
             valueEnd--;
         }
-        return curl.replace(curl.substring(range.getFlagStart(), valueEnd), "");
+        return curl.replace(curl.substring(range.getFlagStart() - 1, valueEnd), "");
     }
 
 }

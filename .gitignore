@@ -11,3 +11,4 @@ gradlew.bat
 *.bin.idx
 
 tmp
+build

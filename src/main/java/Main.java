@@ -25,8 +25,16 @@ public class Main {
             String requestType = componentList.get(ComponentType.REQUEST_TYPE).get(0);
             String url = componentList.get(ComponentType.URL).get(0);
 
+            String addHeaderCode = "";
+            for (String header: componentList.get(ComponentType.HEADER)) {
+                String [] headerComponents = header.split(":");
+                addHeaderCode += "headers.add(\"" + headerComponents[0] + "\", \"" + headerComponents[1] + "\"); \n";
+                //headers.add();
+            }
             String restTemplateBlock = String.format(
-                    "HttpEntity<String> requestEntity = new HttpEntity<String>(\"\");\n" +
+                    "HttpHeaders headers = new HttpHeaders(); \n " +
+                            addHeaderCode +
+                    "HttpEntity<String> requestEntity = new HttpEntity<String>(\"\", headers);\n" +
                             "ResponseEntity<String> responseEntity = restTemplate.exchange(\"%s\", HttpMethod.%s, requestEntity, String.class);\n",
                     url, requestType);
 
