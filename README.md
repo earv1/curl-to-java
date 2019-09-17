@@ -1,9 +1,8 @@
 # curl-to-java
 <a href="https://codeclimate.com/github/just1689/curl-to-java/maintainability"><img src="https://api.codeclimate.com/v1/badges/0189ac942dad13f3d7e8/maintainability" /></a><br />
 
-
+## Description
 I really wanted something that could take a curl and turn into a spring Spring rest template. I then realized that I could also generate checks for telemetry, in order to make sure that systems are behaving as expected. This is the result!
-
 
 ## How to Use
 Add your curls in resources/curls.txt and `gradle run`
@@ -21,5 +20,6 @@ Specifically, it performs the following steps
 4. Run all the code together and see if the tests pass
 
 ## Features
-Besides for transforming curls into java with tests to make sure you get the right response,
-templates are also supported! So you can customize the output.
+1. Transforms a curl into a java http request
+2. Generates tests to make sure the response is the same each time
+3. Can change output with templates
