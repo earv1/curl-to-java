@@ -82,8 +82,7 @@ public class CurlToComponentsTest {
 
         List<String> dataList = componentList.get(ComponentType.DATA);
         assertEquals(1, dataList.size());
-
-
+        assertEquals("param1=value1&param2=value2&param3=http://test.com", dataList.get(0));
     }
 
     @Test
