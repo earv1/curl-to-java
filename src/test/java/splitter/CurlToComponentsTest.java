@@ -48,7 +48,7 @@ public class CurlToComponentsTest {
                 urls.get(0), requestTypes.get(0));
 
 
-        String restResponse = codeExecutor.runCode("Testing12345", codeExecutor.getContainingClass(),restTemplateBlock, "String", "responseEntity.getBody()");
+        String restResponse = codeExecutor.runCode("GeneratedTestCode", codeExecutor.getContainingClass(),restTemplateBlock, "String", "responseEntity.getBody()");
         String tests = JsonToTests.jsonToTests(restResponse);
 
         String jsonNodeConversionBlock = "final JsonNode jsonNode = mapper.readValue(responseEntity.getBody(), JsonNode.class);\n";
@@ -57,7 +57,7 @@ public class CurlToComponentsTest {
                         jsonNodeConversionBlock +
                         tests +
                         "boolean success = true;\n";
-        String output = codeExecutor.runCode("Testing12345", codeExecutor.getContainingClass(), fullCodeBlockWithTests, "boolean", "success");
+        String output = codeExecutor.runCode("GeneratedTestCode", codeExecutor.getContainingClass(), fullCodeBlockWithTests, "boolean", "success");
 
         assertEquals("true",  output);
     }

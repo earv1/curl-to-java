@@ -30,7 +30,7 @@ public class Main {
                             "ResponseEntity<String> responseEntity = restTemplate.exchange(\"%s\", HttpMethod.%s, requestEntity, String.class);\n",
                     url, requestType);
 
-            String restResponse = codeExecutor.runCode("Testing12345", codeTemplate, restTemplateBlock, "String", "responseEntity.getBody()");
+            String restResponse = codeExecutor.runCode("GeneratedCodeForInitialHttpRequest", codeTemplate, restTemplateBlock, "String", "responseEntity.getBody()");
             String tests = JsonToTests.jsonToTests(restResponse);
 
             String jsonNodeConversionBlock = "final JsonNode jsonNode = mapper.readValue(responseEntity.getBody(), JsonNode.class);\n";

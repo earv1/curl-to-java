@@ -9,3 +9,5 @@ gradlew.bat
 *.class
 *.bin
 *.bin.idx
+
+tmp

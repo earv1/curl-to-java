@@ -65,7 +65,10 @@ public class CodeExecutor {
 
             JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
             StandardJavaFileManager standardFileManager = jc.getStandardFileManager(null, null, null);
-            File javaFile = new File(fileName + ".java"); //create file in current working directory
+            File javaFile = new File("tmp/" + fileName + ".java"); //create file in tmp directory, located in current working directory
+
+            File javaFileParentFile = javaFile.getParentFile();
+            javaFileParentFile.mkdirs();
 
             source = getClassWithPlaceHolders(fileName, source, mainLogic, returnType, variableToGrabOutputFrom);
 
@@ -83,7 +86,7 @@ public class CodeExecutor {
             if (!jc.getTask(null, standardFileManager, null, null, null, standardFileManagerJavaFileObjects).call()) { //compile the code
                 throw new RuntimeException("compilation failed");
             }
-            URL[] urls = new URL[]{new File("").toURI().toURL()}; //use current working directory
+            URL[] urls = new URL[]{javaFileParentFile.toURI().toURL()}; //Use the folder that the source file is located in
             URLClassLoader ucl = new URLClassLoader(urls);
             Object object = ucl.loadClass(fileName).newInstance();
             return object.getClass().getDeclaredMethod("execute").invoke(object).toString();
