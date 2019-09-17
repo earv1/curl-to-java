@@ -1,6 +1,6 @@
 package splitter;
 
-import component.ComponentType;
+import datastructures.ComponentType;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package splitter;
 
 import codeexecutor.CodeExecutor;
-import component.ComponentType;
+import datastructures.ComponentType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import testgenerator.JsonToTests;

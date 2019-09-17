@@ -1,7 +1,7 @@
 package splitter;
 
 import com.google.common.collect.ImmutableList;
-import component.ComponentType;
+import datastructures.ComponentType;
 
 import java.util.*;
 

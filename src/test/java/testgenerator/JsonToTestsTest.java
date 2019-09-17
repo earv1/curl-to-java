@@ -2,13 +2,10 @@ package testgenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class JsonToTestsTest {
 

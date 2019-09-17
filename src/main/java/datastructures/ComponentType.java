@@ -1,4 +1,4 @@
-package component;
+package datastructures;
 
 public enum ComponentType {
     HEADER,

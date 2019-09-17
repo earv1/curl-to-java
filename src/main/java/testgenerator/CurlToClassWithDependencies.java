@@ -2,7 +2,7 @@ package testgenerator;
 
 import codeexecutor.CodeExecutor;
 import codeexecutor.UrlToClassName;
-import component.ComponentType;
+import datastructures.ComponentType;
 import splitter.CurlToComponents;
 
 import java.nio.file.Files;
