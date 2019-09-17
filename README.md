@@ -15,7 +15,7 @@ Java 9+
 Curl to java works by generating taking a curl request, and generating java code with tests out of it.
 
 Specifically, it performs the following steps
-1. Transform curl request into generated java http request
+1. Transform curl request into generated restTemplate request
 2. Run generated java code and get json response.
 3. Generate more code, specifically tests from json response.
 4. Run all the code together and see if the tests pass
