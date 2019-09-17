@@ -3,7 +3,7 @@ package testgenerator;
 import org.junit.jupiter.api.Test;
 
 
-class CurlToClassWithDependenciesTest {
+class CurlToClassWithTestsTest {
 
     @Test
     public void endToEndTestCreation () throws Exception {
@@ -13,6 +13,6 @@ class CurlToClassWithDependenciesTest {
                 "curl http://jsonplaceholder.typicode.com/todos"
         };
 
-        CurlToClassWithDependencies.generateClassWithDependencies(curls);
+        CurlToClassWithTests.generateClassWithDependencies(curls);
     }
 }

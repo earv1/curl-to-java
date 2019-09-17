@@ -1,4 +1,4 @@
-import testgenerator.CurlToClassWithDependencies;
+import testgenerator.CurlToClassWithTests;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,6 +9,6 @@ public class Main {
         Path curlsPath = Paths.get(ClassLoader.getSystemResource("curls.txt").toURI());
         String [] curlArray = Files.readString(curlsPath).split("[\n|\r]");
 
-        CurlToClassWithDependencies.generateClassWithDependencies(curlArray);
+        CurlToClassWithTests.generateClassWithDependencies(curlArray);
     }
 }

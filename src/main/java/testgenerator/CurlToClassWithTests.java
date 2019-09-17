@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
-public class CurlToClassWithDependencies {
+public class CurlToClassWithTests {
     private static CodeExecutor codeExecutor = new CodeExecutor();
 
     public static void generateClassWithDependencies (String [] curlArray) throws Exception {
