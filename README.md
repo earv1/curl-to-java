@@ -6,7 +6,8 @@
 Generate java requests and tests from curls.
 
 ## How to Use
-<img src="https://img.shields.io/github/v/release/earv1/curl-to-java.svg" />
+<img src="https://img.shields.io/github/v/release/earv1/curl-to-java.svg">
+
 - Download the latest <a href="https://github.com/earv1/curl-to-java/releases">release</a>.
 - Add your curls in resources/curls.txt.
 - Run `gradle run`.
