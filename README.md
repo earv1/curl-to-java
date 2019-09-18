@@ -1,5 +1,6 @@
 # curl-to-java
 [![CircleCI](https://circleci.com/gh/earv1/curl-to-java.svg?style=svg)](https://circleci.com/gh/earv1/curl-to-java)&nbsp;<a href="https://codeclimate.com/github/just1689/curl-to-java/maintainability"><img src="https://api.codeclimate.com/v1/badges/0189ac942dad13f3d7e8/maintainability" /></a>&nbsp;<a href="https://codebeat.co/projects/github-com-just1689-curl-to-java-master"><img alt="codebeat badge" src="https://codebeat.co/badges/b2f364cf-38f1-4fcd-bef0-6c403efc07dc" /></a>&nbsp;<img src="https://img.shields.io/github/v/release/just1689/curl-to-java.svg">
+ [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <br />
 
 Generate Java requests and tests from curls.
