@@ -3,13 +3,13 @@
 <br />
 
 ## Description
-Generate java requests and tests from curls
+Generate java requests and tests from curls.
 
 ## How to Use
 <img src="https://img.shields.io/github/v/release/earv1/curl-to-java.svg" />
-- Download the latest <a href="https://github.com/earv1/curl-to-java/releases">release</a>
-- Add your curls in resources/curls.txt 
-- Run `gradle run`
+- Download the latest <a href="https://github.com/earv1/curl-to-java/releases">release</a>.
+- Add your curls in resources/curls.txt.
+- Run `gradle run`.
 
 ## Requirements
 Java 9+
@@ -17,13 +17,13 @@ Java 9+
 ## How does it work
 Curl to java works by generating taking a curl request, and generating java code with tests out of it.
 
-Specifically, it performs the following steps
-1. Transform curl request into generated restTemplate request
+Specifically, it performs the following steps.
+1. Transform curl request into generated restTemplate request.
 2. Run generated java code and get json response.
 3. Generate more code, specifically tests from json response.
-4. Run all the code together and see if the tests pass
+4. Run all the code together and see if the tests pass.
 
 ## Features
-1. Transforms a curl into a java http request
-2. Generates tests to make sure the response is the same each time
-3. Can customise generated code with templates
+1. Transforms a curl into a java http request.
+2. Generates tests to make sure the response is the same each time.
+3. Can customise generated code with templates.
