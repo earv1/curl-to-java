@@ -7,7 +7,7 @@ class CurlToClassWithTestsTest {
 
 
     @Test
-    void endToEndTestNoQuotesUrlInFront() throws Exception {
+    void endToEndTestNoQuotesUrlAtFront() throws Exception {
         String [] curls = {
                 "curl http://jsonplaceholder.typicode.com/posts -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\"",
         };
@@ -16,18 +16,27 @@ class CurlToClassWithTestsTest {
     }
 
     @Test
-    void endToEndTestNoQuotesUrlAtFront () throws Exception {
+    void endToEndTestNoQuotesUrlAtBack () throws Exception {
         String [] curls = {
-                "curl http://jsonplaceholder.typicode.com/posts -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\"",
+                "curl -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\" http://jsonplaceholder.typicode.com/posts",
         };
 
         CurlToClassWithTests.generateClassWithDependencies(curls);
     }
 
     @Test
-    void endToEndTestPost () throws Exception {
+    void endToEndTestPostUrlAtFront () throws Exception {
         String [] curls = {
                 "curl 'http://jsonplaceholder.typicode.com/posts' -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}'",
+        };
+
+        CurlToClassWithTests.generateClassWithDependencies(curls);
+    }
+
+    @Test
+    void endToEndTestPostUrlAtBack () throws Exception {
+        String [] curls = {
+                "curl -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' 'http://jsonplaceholder.typicode.com/posts'",
         };
 
         CurlToClassWithTests.generateClassWithDependencies(curls);

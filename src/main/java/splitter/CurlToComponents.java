@@ -136,6 +136,9 @@ public class CurlToComponents {
     private static CommandSection extractPayloadWithoutQuotes(String curl) throws CommandConversionException {
         final int dataStart = 0;
         int dataEnd = curl.indexOf(" ", dataStart);
+        if(dataEnd == -1) {
+            dataEnd = curl.length();
+        }
         return new CommandSection(curl.substring(dataStart, dataEnd), dataEnd);
     }
 
