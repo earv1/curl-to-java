@@ -26,8 +26,8 @@ public class CurlToComponentsTest {
                 "-H 'Accept-Language: en-US,en;q=0.5' " +
                 "-H \"Content-Type: application/x-www-form-urlencoded\" " +
                 "-H 'Referer: https://www.google.com/' " +
-                "-X GET " +
-                "https://jsonplaceholder.typicode.com/users";
+                "-X 'GET' " +
+                "'https://jsonplaceholder.typicode.com/users'";
 
         Map<CommandType, List<String>> componentList = CurlToComponents.extractComponents(curl);
 
@@ -70,8 +70,8 @@ public class CurlToComponentsTest {
                         "-H 'Accept-Language: en-US,en;q=0.5' " +
                         "-H \"Content-Type: application/x-www-form-urlencoded\" " +
                         "-H 'Referer: https://www.google.com/' " +
-                        "-X POST " +
-                        "https://jsonplaceholder.typicode.com/users");
+                        "-X 'POST' " +
+                        "'https://jsonplaceholder.typicode.com/users'");
 
         List<String> requestTypes = componentList.get(CommandType.REQUEST_TYPE);
         assertEquals(1, requestTypes.size());
