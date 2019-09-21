@@ -1,4 +1,4 @@
-package testgenerator;
+package MainFlow;
 
 import codegenerator.CommandSectionsToTests;
 import com.fasterxml.jackson.databind.JsonNode;

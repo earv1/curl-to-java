@@ -1,4 +1,4 @@
-import testgenerator.CurlToClassWithTests;
+import MainFlow.CurlToClassWithTests;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

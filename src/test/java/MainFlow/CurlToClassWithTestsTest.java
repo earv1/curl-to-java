@@ -1,4 +1,4 @@
-package testgenerator;
+package MainFlow;
 
 import org.junit.jupiter.api.Test;
 
