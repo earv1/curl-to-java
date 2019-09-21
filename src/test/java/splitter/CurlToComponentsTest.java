@@ -4,7 +4,7 @@ import codeexecutor.CodeExecutor;
 import datastructures.CommandType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import testgenerator.JsonToTests;
+import codegenerator.CommandSectionsToTests;
 
 
 import java.util.List;
@@ -49,7 +49,7 @@ public class CurlToComponentsTest {
 
 
         String restResponse = codeExecutor.runCode("GeneratedTestCode", codeExecutor.getContainingClass(),restTemplateBlock, "String", "responseEntity.getBody()");
-        String tests = JsonToTests.jsonToTests(restResponse);
+        String tests = CommandSectionsToTests.jsonToTests(restResponse);
 
         String jsonNodeConversionBlock = "final JsonNode jsonNode = mapper.readValue(responseEntity.getBody(), JsonNode.class);\n";
         String fullCodeBlockWithTests =

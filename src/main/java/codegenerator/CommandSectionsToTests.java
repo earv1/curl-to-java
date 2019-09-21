@@ -1,4 +1,4 @@
-package testgenerator;
+package codegenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
-public class JsonToTests {
+public class CommandSectionsToTests {
 
     final static ObjectMapper mapper = new ObjectMapper(); // create once, reuse
 

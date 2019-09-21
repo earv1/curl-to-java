@@ -29,11 +29,7 @@ public class CurlToComponents {
 
         componentMap = addRequestTypeIfNonExistent(componentMap);
 
-        try {
-            new ObjectMapper().writeValue(new File("tmp/exctractedCurl.json"), componentMap);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
 
         return componentMap;
     }

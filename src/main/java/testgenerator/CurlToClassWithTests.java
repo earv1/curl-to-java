@@ -2,14 +2,19 @@ package testgenerator;
 
 import codeexecutor.CodeExecutor;
 import codeexecutor.UrlToClassName;
+import codegenerator.CommandSectionsToInitialization;
+import codegenerator.CommandSectionsToTests;
 import datastructures.CommandType;
+import org.openjdk.tools.javac.jvm.Code;
 import splitter.CurlToComponents;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CurlToClassWithTests {
     private static CodeExecutor codeExecutor = new CodeExecutor();
@@ -21,39 +26,27 @@ public class CurlToClassWithTests {
         Path defaultTemplatePath = Paths.get(ClassLoader.getSystemResource("template/Default.java").toURI());
         String defaultCodeTemplate = Files.readString(defaultTemplatePath);
 
+        List<Map<CommandType, List<String>>> componentMapList = Arrays.stream(curlArray).map(CurlToComponents::extractComponents).collect(Collectors.toList());
+
+//        try {
+//            new ObjectMapper().writeValue(new File("tmp/exctractedCurl.json"), componentMap);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
         for (String curl: curlArray) {
-            Map<CommandType, List<String>> componentList = CurlToComponents.extractComponents(curl);
+            Map<CommandType, List<String>> componentMap = CurlToComponents.extractComponents(curl);
 
-            String requestType = componentList.get(CommandType.REQUEST_TYPE).get(0);
-            String url = componentList.get(CommandType.NONE).get(0);
 
-            String addHeaderCode = "";
-            for (String header: componentList.get(CommandType.HEADER)) {
-                String [] headerComponents = header.split(":", 2);
-                addHeaderCode += "headers.add(\"" + headerComponents[0] + "\", \"" + headerComponents[1] + "\"); \n";
-            }
-            List<String> dataList = componentList.get(CommandType.DATA);
-            String data = "";
-            if(dataList.size() > 0) {
-                data = dataList.get(0).replace("\"", "\\\"");
-            }
-            String restTemplateBlock = String.format(
-                    "HttpHeaders headers = new HttpHeaders(); \n " +
-                            addHeaderCode +
-                            "HttpEntity<String> requestEntity = new HttpEntity<String>(\"" + data + "\", " +
-                            "headers);\n" +
-                            "ResponseEntity<String> responseEntity = restTemplate.exchange(\"%s\", HttpMethod.%s, requestEntity, String.class);\n",
-                    url, requestType);
-
+            String restTemplateBlock = CommandSectionsToInitialization.commandSectionsToRestTemplate(componentMap);
             String restResponse = codeExecutor.runCode("GeneratedCodeForInitialHttpRequest", defaultCodeTemplate, restTemplateBlock, "String", "responseEntity.getBody()");
-            String tests = JsonToTests.jsonToTests(restResponse);
+            String tests = CommandSectionsToTests.jsonToTests(restResponse);
 
-            String jsonNodeConversionBlock = "final JsonNode jsonNode = mapper.readValue(responseEntity.getBody(), JsonNode.class);\n";
             String fullCodeBlockWithTests =
                     restTemplateBlock +
-                            jsonNodeConversionBlock +
                             tests;
 
+            String url = componentMap.get(CommandType.NONE).get(0);
             String output = codeExecutor.runCode(UrlToClassName.urlToClassName(url) +"Default", defaultCodeTemplate,  fullCodeBlockWithTests, "boolean", "true");
 
             if(!output.equals("true")) {
