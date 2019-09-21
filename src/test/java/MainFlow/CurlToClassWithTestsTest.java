@@ -7,7 +7,16 @@ class CurlToClassWithTestsTest {
 
 
     @Test
-    public void endToEndTestNoQuotes () throws Exception {
+    public void endToEndTestNoQuotesUrlInFront () throws Exception {
+        String [] curls = {
+                "curl http://jsonplaceholder.typicode.com/posts -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\"",
+        };
+
+        CurlToClassWithTests.generateClassWithDependencies(curls);
+    }
+
+    @Test
+    public void endToEndTestNoQuotesUrlAtFront () throws Exception {
         String [] curls = {
                 "curl http://jsonplaceholder.typicode.com/posts -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\"",
         };
