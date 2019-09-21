@@ -7,7 +7,7 @@ class CurlToClassWithTestsTest {
 
 
     @Test
-    public void endToEndTestNoQuotesUrlInFront () throws Exception {
+    void endToEndTestNoQuotesUrlInFront() throws Exception {
         String [] curls = {
                 "curl http://jsonplaceholder.typicode.com/posts -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\"",
         };
@@ -16,7 +16,7 @@ class CurlToClassWithTestsTest {
     }
 
     @Test
-    public void endToEndTestNoQuotesUrlAtFront () throws Exception {
+    void endToEndTestNoQuotesUrlAtFront () throws Exception {
         String [] curls = {
                 "curl http://jsonplaceholder.typicode.com/posts -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\"",
         };
@@ -25,7 +25,7 @@ class CurlToClassWithTestsTest {
     }
 
     @Test
-    public void endToEndTestPost () throws Exception {
+    void endToEndTestPost () throws Exception {
         String [] curls = {
                 "curl 'http://jsonplaceholder.typicode.com/posts' -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}'",
         };
@@ -34,7 +34,7 @@ class CurlToClassWithTestsTest {
     }
 
     @Test
-    public void endToEndTestGetWithHeaders () throws Exception {
+    void endToEndTestGetWithHeaders () throws Exception {
         String [] curls = {
                 "curl -H 'Accept-Language: en-US,en;q=0.5' -H \"Content-Type: application/x-www-form-urlencoded\" -H 'Referer: https://www.google.com/' -X 'GET' 'http://jsonplaceholder.typicode.com/users'",
         };
@@ -43,7 +43,7 @@ class CurlToClassWithTestsTest {
     }
 
     @Test
-    public void endToEndTestSimpleGet () throws Exception {
+    void endToEndTestSimpleGet () throws Exception {
         String [] curls = {
                 "curl 'http://jsonplaceholder.typicode.com/todos'"
         };
@@ -52,7 +52,7 @@ class CurlToClassWithTestsTest {
     }
 
     @Test
-    public void endToEndTestMultipleCreation () throws Exception {
+    void endToEndTestMultipleCreation () throws Exception {
         String [] curls = {
                 "curl http://jsonplaceholder.typicode.com/posts -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\"",
                 "curl 'http://jsonplaceholder.typicode.com/posts' -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}'",

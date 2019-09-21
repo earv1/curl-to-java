@@ -12,16 +12,16 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CurlToComponentsTest {
+class CurlToComponentsTest {
 
     private static CodeExecutor codeExecutor;
     @BeforeAll
-    public static void beforeAll() {
+    static void beforeAll() {
         codeExecutor =  new CodeExecutor();
     }
 
     @Test
-    public void extractGetComponentsTest() throws Exception {
+    void extractGetComponentsTest() throws Exception {
         String curl = "curl -d \"param1=value1&param2=value2&param3=http://test.com\" " +
                 "-H 'Accept-Language: en-US,en;q=0.5' " +
                 "-H \"Content-Type: application/x-www-form-urlencoded\" " +
@@ -64,7 +64,7 @@ public class CurlToComponentsTest {
     }
 
     @Test
-    public void extractPOSTComponentsTest() throws Exception {
+    void extractPOSTComponentsTest() throws Exception {
         Map<CommandType, List<String>> componentList = CurlToComponents.extractComponents(
                 "curl -d \"param1=value1&param2=value2&param3=http://test.com\" " +
                         "-H 'Accept-Language: en-US,en;q=0.5' " +

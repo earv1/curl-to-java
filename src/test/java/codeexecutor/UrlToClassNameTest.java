@@ -7,28 +7,28 @@ import static org.junit.jupiter.api.Assertions.*;
 class UrlToClassNameTest {
 
     @Test
-    public void urlToClassNameTestWithParams() {
+    void urlToClassNameTestWithParams() {
         String url = "https://jsonplaceholder.typicode.com/users?123=";
         String className = UrlToClassName.urlToClassName(url);
         assertEquals("JsonplaceholderTypicodeComUsers", className);
     }
 
     @Test
-    public void urlToClassNameTest() {
+    void urlToClassNameTest() {
         String url = "https://jsonplaceholder.typicode.com/users";
         String className = UrlToClassName.urlToClassName(url);
         assertEquals("JsonplaceholderTypicodeComUsers", className);
     }
 
     @Test
-    public void urlToClassNameTestWithDashes() {
+    void urlToClassNameTestWithDashes() {
         String url = "https://jsonplace-holder.typicode.com/users";
         String className = UrlToClassName.urlToClassName(url);
         assertEquals("JsonplaceHolderTypicodeComUsers", className);
     }
 
     @Test
-    public void urlToClassNameTestHttp() {
+    void urlToClassNameTestHttp() {
         String url = "http://jsonplaceholder.typicode.com/users";
         String className = UrlToClassName.urlToClassName(url);
         assertEquals("JsonplaceholderTypicodeComUsers", className);
