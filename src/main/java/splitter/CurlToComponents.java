@@ -23,7 +23,10 @@ public class CurlToComponents {
         componentMap.computeIfAbsent(CommandType.REQUEST_TYPE, k -> new LinkedList<>());
         componentMap.computeIfAbsent(CommandType.DATA, k -> new LinkedList<>());
         componentMap.computeIfAbsent(CommandType.NONE, k -> new LinkedList<>());
+        componentMap.computeIfAbsent(CommandType.ORIGINAL_COMMAND, k -> new LinkedList<>());
 
+
+        componentMap.get(CommandType.ORIGINAL_COMMAND).add(curl);
 
         componentMap = extractComponents(validateAndRemoveCurlCommand(curl), componentMap);
 

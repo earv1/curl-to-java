@@ -4,5 +4,6 @@ public enum CommandType {
     HEADER,
     DATA,
     REQUEST_TYPE,
-    NONE
+    NONE,
+    ORIGINAL_COMMAND
 }
