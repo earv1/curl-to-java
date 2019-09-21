@@ -2,7 +2,7 @@ package testgenerator;
 
 import codeexecutor.CodeExecutor;
 import codeexecutor.UrlToClassName;
-import datastructures.ComponentType;
+import datastructures.CommandType;
 import splitter.CurlToComponents;
 
 import java.nio.file.Files;
@@ -22,17 +22,17 @@ public class CurlToClassWithTests {
         String defaultCodeTemplate = Files.readString(defaultTemplatePath);
 
         for (String curl: curlArray) {
-            Map<ComponentType, List<String>> componentList = CurlToComponents.extractComponents(curl);
+            Map<CommandType, List<String>> componentList = CurlToComponents.extractComponents(curl);
 
-            String requestType = componentList.get(ComponentType.REQUEST_TYPE).get(0);
-            String url = componentList.get(ComponentType.URL).get(0);
+            String requestType = componentList.get(CommandType.REQUEST_TYPE).get(0);
+            String url = componentList.get(CommandType.NONE).get(0);
 
             String addHeaderCode = "";
-            for (String header: componentList.get(ComponentType.HEADER)) {
+            for (String header: componentList.get(CommandType.HEADER)) {
                 String [] headerComponents = header.split(":", 2);
                 addHeaderCode += "headers.add(\"" + headerComponents[0] + "\", \"" + headerComponents[1] + "\"); \n";
             }
-            List<String> dataList = componentList.get(ComponentType.DATA);
+            List<String> dataList = componentList.get(CommandType.DATA);
             String data = "";
             if(dataList.size() > 0) {
                 data = dataList.get(0).replace("\"", "\\\"");

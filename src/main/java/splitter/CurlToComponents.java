@@ -1,157 +1,143 @@
 package splitter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import datastructures.ComponentType;
-import datastructures.SeparatedStringComponentList;
+import datastructures.CommandConversionException;
+import datastructures.CommandSection;
+import datastructures.CommandType;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
+//TODO
+//Make map immutable to force deep cloning
 //curl -d "param1=value1&param2=value2&param3=http://test.com" -H "Content-Type: application/x-www-form-urlencoded" -X POST http://localhost:3000/data
 public class CurlToComponents {
-    public static Map<ComponentType, List<String>> extractComponents(String curl) {
-        Map<ComponentType, List <String>> componentMap = new HashMap<>();
 
-        SeparatedStringComponentList currentSeparatedStringComponent = getRequestType(curl);
 
-        componentMap.computeIfAbsent(ComponentType.HEADER, k -> new LinkedList<>());
-        componentMap.get(ComponentType.HEADER)
-                .addAll(getHeadersFromCurl(curl));
+    public static Map<CommandType, List<String>> extractComponents(String curl) throws CommandConversionException {
+        Map<CommandType, List <String>> componentMap = new HashMap<>();
 
-        componentMap.computeIfAbsent(ComponentType.REQUEST_TYPE, k -> new LinkedList<>());
-        componentMap.get(ComponentType.REQUEST_TYPE)
-        .addAll(currentSeparatedStringComponent.getExtractedValues());
+        componentMap.computeIfAbsent(CommandType.HEADER, k -> new LinkedList<>());
+        componentMap.computeIfAbsent(CommandType.REQUEST_TYPE, k -> new LinkedList<>());
+        componentMap.computeIfAbsent(CommandType.DATA, k -> new LinkedList<>());
+        componentMap.computeIfAbsent(CommandType.NONE, k -> new LinkedList<>());
 
-        componentMap.computeIfAbsent(ComponentType.URL, k -> new LinkedList<>());
-        componentMap.get(ComponentType.URL)
-                .addAll(getUrlFromCurl(curl).getExtractedValues());
 
-        componentMap.computeIfAbsent(ComponentType.DATA, k -> new LinkedList<>());
-        componentMap.get(ComponentType.DATA)
-                .addAll(getPostDataFromCurl(curl));
+        componentMap = extractComponents(validateAndRemoveCurlCommand(curl), componentMap);
+
+        componentMap = addRequestTypeIfNonExistent(componentMap);
+
+        try {
+            new ObjectMapper().writeValue(new File("tmp/exctractedCurl.json"), componentMap);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return componentMap;
     }
 
-
-    private static List<String> getPostDataFromCurl(String curl) {
-        Range dataRange = getDataRange(curl);
-        List<String> dataRangeList = new ArrayList<>();
-
-            if(dataRange.getFlagStart() > -1 && dataRange.getValueStart() > -1 && dataRange.getValueEnd() > -1) {
-                dataRangeList.add(curl.substring(dataRange.getValueStart() + 1, dataRange.getValueEnd()));
+    private static Map<CommandType, List <String>>  addRequestTypeIfNonExistent(Map<CommandType, List <String>> componentMap ){
+        if(componentMap.get(CommandType.REQUEST_TYPE).size() == 0) {
+            String requestType = "GET";
+            if(componentMap.get(CommandType.DATA).size() > 0) {
+                requestType = "POST";
             }
-        return dataRangeList;
+            componentMap.get(CommandType.REQUEST_TYPE).add(requestType);
+        }
+        return componentMap;
+
     }
 
 
-    private static List<String> getHeadersFromCurl(String curl) {
-        List<String> headers = new ArrayList<>();
+    private static Map<CommandType, List <String>> extractComponents(String curl, Map<CommandType, List <String>> componentMap) throws CommandConversionException {
+        CommandSection nextCommandSection = extractNextCommandSection(curl);
+        String remainingCurl = curl.substring(nextCommandSection.getNextStartingPoint()).trim();
+        componentMap.get(nextCommandSection.getCommandType()).add(nextCommandSection.getCurrentString());
+
+        if(remainingCurl.trim().length() <=0) {
+            return componentMap;
+        } else {
+            return extractComponents(remainingCurl, componentMap);
+        }
+    }
+
+    private static CommandSection extractNextCommandSection(String curl) throws CommandConversionException {
+        curl = curl.trim();
+        char nextChar = curl.charAt(0);
+        if (isQuote(nextChar)) {
+            return new CommandSection(getPayloadInQuote(curl, nextChar), CommandType.NONE);
+        } else {
+
+            String [] commandAndRemainingCurl = curl.split("\\s", 2);
+            String command = commandAndRemainingCurl[0];
+            String remainingCurl = commandAndRemainingCurl[1].trim();
+            nextChar = remainingCurl.charAt(0);
+            CommandType commandType = extractCommandType(command.trim());
+            CommandSection commandSectionWithRemainingLengthNotIncludingCommand = getPayloadInQuote(remainingCurl, nextChar);
+            return new CommandSection(commandSectionWithRemainingLengthNotIncludingCommand.getCurrentString(),
+                    commandSectionWithRemainingLengthNotIncludingCommand.getNextStartingPoint() + command.length() + 1,
+                    commandType);
+
+        }
+    }
+
+    private static CommandType extractCommandType(String commandSection) {
+        List dataOptions = ImmutableList.of("-d", "--data-raw", "--data");
+        List headerOptions = ImmutableList.of("-H", "--header");
+        List requestTypeOptions = ImmutableList.of("-X", "--request");
+
+        if(dataOptions.contains(commandSection)) {
+            return CommandType.DATA;
+        } else if (headerOptions.contains(commandSection)) {
+            return CommandType.HEADER;
+        } else if (requestTypeOptions.contains(commandSection)) {
+            return CommandType.REQUEST_TYPE;
+        } else {
+            return CommandType.NONE;
+        }
+
+    }
+
+    private static CommandSection getPayloadInQuote(String curl, char enclosingQuote) throws CommandConversionException {
+        final int dataStart = 1;
+        int dataEnd = curl.indexOf(enclosingQuote, dataStart);
 
         do {
-            Range dataRange = getArgumentDataRange(curl, ImmutableList.of("-H", "--header"));
-
-            if(dataRange.getFlagStart() > -1 && dataRange.getValueStart() > -1 && dataRange.getValueEnd() > -1) {
-                headers.add(curl.substring(dataRange.getValueStart() + 1, dataRange.getValueEnd()));
-                curl = curlWithRangeRemoved(curl, dataRange);
-            } else {
+            if(curl.charAt(dataEnd - 1) != '/') {
                 break;
+            } else if (dataEnd > curl.length()) {
+                throw new CommandConversionException();
+            }  else {
+                dataEnd = curl.indexOf(enclosingQuote, dataEnd + 1);
             }
+
         } while (true);
-        return headers;
+
+        return new CommandSection(curl.substring(dataStart, dataEnd), dataEnd + 1);
     }
 
-    private static Range getArgumentDataRange(String curl, List<String> argumentSynonyms) {
-        int flagStart = -1;
-        int dataStart = -1;
-        int dataEnd = -1;
 
-        for(String argumentSynonym: argumentSynonyms) {
-            flagStart = flagStart> -1 ? flagStart : curl.indexOf(argumentSynonym);
-        }
+    private static String validateAndRemoveCurlCommand(String curl) {
+        String curlRegex = "^curl ";
 
-        if(flagStart > -1 ) {
-            char enclosingQuote = getEnclosingQuote(curl, flagStart);
-            dataStart = curl.indexOf(enclosingQuote, flagStart + 1);
-            dataEnd = curl.indexOf(enclosingQuote, dataStart + 1);
-            if(dataEnd == -1) {
-                dataStart = -1;
-            }
-        }
-        return new Range(flagStart, dataStart, dataEnd);
-    }
+        //Don't want to have to deal with spaces that don't mean anything
+        curl = curl.trim();
 
-    private static Range getDataRange(String curl) {
-        return getArgumentDataRange(curl, ImmutableList.of("-d", "--data-", "--data"));
-    }
-
-    private static SeparatedStringComponentList getUrlFromCurl(String curl) {
-        int httpStart = 0;
-        boolean found = false;
-        do {
-            httpStart = curl.indexOf("http", httpStart + 1);
-             found = isUrlDestination(curl, httpStart);
-        } while (!found);
-
-        if(!found) {
-            throw new RuntimeException("No destination address found");
+        if(curl.matches(curlRegex + ".*")){
+            return curl.replaceAll(curlRegex, "");
         } else {
-            int valueStart = httpStart;
-            int valueEnd = curl.indexOf(' ', valueStart + 1);
-            if(valueEnd == -1) {
-                valueEnd = curl.length();
-            }
-
-            Range range = new Range(valueStart, valueStart, valueEnd);
-
-            return new SeparatedStringComponentList(
-                    curlWithRangeRemoved(curl, range),
-                    ComponentType.URL,
-                    Collections.singletonList(curl.substring(range.getValueStart(), range.getValueEnd())));
-        }
-
-    }
-
-    //Check if the url is what we send our data to.
-    private static boolean isUrlDestination(String curl, int httpStart){
-            if (curl.charAt(httpStart -1) == ' ' &&  curl.charAt(httpStart -2) != ':') {
-                return true;
-            } else {
-                return false;
-            }
-    }
-
-    public static char getEnclosingQuote(String curl, int start) {
-        int doubleQuoteStart = curl.indexOf("\"", start);
-        int singleQuoteStart = curl.indexOf("'", start);
-
-        if(doubleQuoteStart == -1) {
-            doubleQuoteStart = Integer.MAX_VALUE;
-        }
-
-        if(singleQuoteStart == -1) {
-            singleQuoteStart = Integer.MAX_VALUE;
-        }
-
-        return doubleQuoteStart < singleQuoteStart ? '\"'  : '\'';
-
-    }
-
-    private static SeparatedStringComponentList getRequestType(String curl){
-        Range dataRange = getDataRange(curl);
-        if ((dataRange.getValueStart() > 0 || curl.contains("-X POST") || curl.contains("--request POST")) &&
-                !curl.contains("-X GET") && !curl.contains("--request GET")) {
-            return new SeparatedStringComponentList(curlWithRangeRemoved(curl, dataRange), ComponentType.REQUEST_TYPE, Collections.singletonList("POST"));
-        } else {
-            return new SeparatedStringComponentList(curl, ComponentType.REQUEST_TYPE, Collections.singletonList("GET"));
+            throw new RuntimeException("Not a valid curl command, must start with 'curl '");
         }
     }
 
-    private static String curlWithRangeRemoved(final String curl, final Range range) {
-        int valueEnd = range.getValueEnd() + 1;
-        if(valueEnd > curl.length()) {
-            valueEnd--;
-        }
-        return curl.replace(curl.substring(range.getFlagStart() - 1, valueEnd), "");
+
+
+    private static boolean isQuote(char charToCheck) {
+        return charToCheck == '"' || charToCheck == '\'';
     }
+
+
 
 }
