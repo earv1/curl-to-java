@@ -50,36 +50,49 @@ public class CurlToComponents {
 
     }
 
-
     private static Map<CommandType, List <String>> extractComponents(String curl, Map<CommandType, List <String>> componentMap) throws CommandConversionException {
-        CommandSection nextCommandSection = extractNextCommandSection(curl);
+        CommandSection nextCommandSection = extractNextSection(curl);
         String remainingCurl = curl.substring(nextCommandSection.getNextStartingPoint()).trim();
         componentMap.get(nextCommandSection.getCommandType()).add(nextCommandSection.getCurrentString());
 
-        if(remainingCurl.trim().length() <=0) {
+        if(remainingCurl.trim().length() <=0 ) {
             return componentMap;
         } else {
             return extractComponents(remainingCurl, componentMap);
         }
     }
 
-    private static CommandSection extractNextCommandSection(String curl) throws CommandConversionException {
-        curl = curl.trim();
-        char nextChar = curl.charAt(0);
-        if (isQuote(nextChar)) {
-            return new CommandSection(getPayloadInQuote(curl, nextChar), CommandType.NONE);
-        } else {
+    private static boolean isQuote(char charToCheck) {
+        return charToCheck == '"' || charToCheck == '\'';
+    }
 
+    private static boolean isNextParamaterCommand(String nextParameter) {
+        return nextParameter.charAt(0) == '-';
+    }
+
+
+    private static CommandSection extractNextSection(String curl) throws CommandConversionException {
+        curl = curl.trim();
+        if (!isNextParamaterCommand(curl)) {
+            return extractPayload(curl);
+        } else { // We know we are dealing with a command here
             String [] commandAndRemainingCurl = curl.split("\\s", 2);
             String command = commandAndRemainingCurl[0];
             String remainingCurl = commandAndRemainingCurl[1].trim();
-            nextChar = remainingCurl.charAt(0);
             CommandType commandType = extractCommandType(command.trim());
-            CommandSection commandSectionWithRemainingLengthNotIncludingCommand = getPayloadInQuote(remainingCurl, nextChar);
+            CommandSection commandSectionWithRemainingLengthNotIncludingCommand = extractPayload(remainingCurl);
             return new CommandSection(commandSectionWithRemainingLengthNotIncludingCommand.getCurrentString(),
                     commandSectionWithRemainingLengthNotIncludingCommand.getNextStartingPoint() + command.length() + 1,
                     commandType);
+        }
+    }
 
+    private static CommandSection extractPayload(String curl) {
+        char nextChar = curl.charAt(0);
+        if (isQuote(nextChar)) {
+            return new CommandSection(extractPayloadInQuote(curl, nextChar), CommandType.NONE);
+        } else {
+            return new CommandSection(extractPayloadWithoutQuotes(curl), CommandType.NONE);
         }
     }
 
@@ -100,24 +113,32 @@ public class CurlToComponents {
 
     }
 
-    private static CommandSection getPayloadInQuote(String curl, char enclosingQuote) throws CommandConversionException {
+    private static CommandSection extractPayloadInQuote(String remainingCurl, char enclosingQuote) throws CommandConversionException {
+        if(!isQuote(enclosingQuote)) {
+            throw new CommandConversionException("Invalid quote, expected either ' or \", but instead got " + enclosingQuote + ", current remaining curl is: " + remainingCurl);
+        }
         final int dataStart = 1;
-        int dataEnd = curl.indexOf(enclosingQuote, dataStart);
+        int dataEnd = remainingCurl.indexOf(enclosingQuote, dataStart);
 
         do {
-            if(curl.charAt(dataEnd - 1) != '/') {
+            if(remainingCurl.charAt(dataEnd - 1) != '\\') {
                 break;
-            } else if (dataEnd > curl.length()) {
-                throw new CommandConversionException();
+            } else if (dataEnd > remainingCurl.length()) {
+                throw new CommandConversionException("getPayloadInQuote hasn't found a viable quote");
             }  else {
-                dataEnd = curl.indexOf(enclosingQuote, dataEnd + 1);
+                dataEnd = remainingCurl.indexOf(enclosingQuote, dataEnd + 1);
             }
 
         } while (true);
 
-        return new CommandSection(curl.substring(dataStart, dataEnd), dataEnd + 1);
+        return new CommandSection(remainingCurl.substring(dataStart, dataEnd), dataEnd + 1);
     }
 
+    private static CommandSection extractPayloadWithoutQuotes(String curl) throws CommandConversionException {
+        final int dataStart = 0;
+        int dataEnd = curl.indexOf(" ", dataStart);
+        return new CommandSection(curl.substring(dataStart, dataEnd), dataEnd);
+    }
 
     private static String validateAndRemoveCurlCommand(String curl) {
         String curlRegex = "^curl ";
@@ -130,12 +151,6 @@ public class CurlToComponents {
         } else {
             throw new RuntimeException("Not a valid curl command, must start with 'curl '");
         }
-    }
-
-
-
-    private static boolean isQuote(char charToCheck) {
-        return charToCheck == '"' || charToCheck == '\'';
     }
 
 
