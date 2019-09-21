@@ -8,6 +8,7 @@ public class UrlToClassName {
     public static String urlToClassName(String url) {
         url = url.replace("https://", "");
         url = url.replace("http://", "");
+        url = url.replaceFirst(":[0-9]*", ""); // port replacement
 
         if(url.contains("?")){
             url = url.substring(0, url.indexOf('?'));

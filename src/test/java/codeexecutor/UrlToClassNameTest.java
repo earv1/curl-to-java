@@ -14,6 +14,13 @@ class UrlToClassNameTest {
     }
 
     @Test
+    void urlToClassNameTestWithPort() {
+        String url = "https://jsonplaceholder.typicode.com:8080/users?123=";
+        String className = UrlToClassName.urlToClassName(url);
+        assertEquals("JsonplaceholderTypicodeComUsers", className);
+    }
+
+    @Test
     void urlToClassNameTest() {
         String url = "https://jsonplaceholder.typicode.com/users";
         String className = UrlToClassName.urlToClassName(url);
