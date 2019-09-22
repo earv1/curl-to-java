@@ -14,6 +14,8 @@ import com.github.tomakehurst.wiremock.recording.SnapshotRecordResult;
 import com.github.tomakehurst.wiremock.stubbing.StubImport;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
 import java.io.IOException;
@@ -113,6 +115,29 @@ public class WiremockWrapper {
             }
         }
         reinitializeMappingsDirectory();
+    }
+
+    public static WiremockWrapper rerunAndRecordWiremockifHttpError(final Runnable runnable, WiremockWrapper wiremockWrapper) {
+
+        try {
+            runnable.run();
+        } catch (RuntimeException e) {
+            if (ExceptionUtils.indexOfThrowable(e, HttpClientErrorException.class) != -1) {
+                //We have an http exception, so let's record again
+                wiremockWrapper.startRecording();
+                runnable.run();
+                wiremockWrapper.saveAllRecordings();
+
+                WiremockWrapper newWiremockWrapper = new WiremockWrapper();
+                //Run again, while not recording to make sure it has recorded successfully
+                runnable.run();
+
+                return newWiremockWrapper;
+            } else {
+                throw e;
+            }
+        }
+        return wiremockWrapper;
     }
 
     public int getPort() {

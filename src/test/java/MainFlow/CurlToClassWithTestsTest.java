@@ -32,7 +32,7 @@ class CurlToClassWithTestsTest {
                 "curl http://localhost:" + wiremockPort + "/posts -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\"",
         };
 
-        CurlToClassWithTests.generateClassWithDependencies(curls);
+        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
     }
 
     @Test
@@ -41,7 +41,7 @@ class CurlToClassWithTestsTest {
                 "curl -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\" http://localhost:" + wiremockPort + "/posts",
         };
 
-        CurlToClassWithTests.generateClassWithDependencies(curls);
+        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
     }
 
     @Test
@@ -51,7 +51,7 @@ class CurlToClassWithTestsTest {
                 "curl 'http://localhost:" + wiremockPort + "/posts' -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}'",
         };
 
-        CurlToClassWithTests.generateClassWithDependencies(curls);
+        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
     }
 
     @Test
@@ -69,7 +69,7 @@ class CurlToClassWithTestsTest {
                 "curl -H 'Accept-Language: en-US,en;q=0.5' -H \"Content-Type: application/x-www-form-urlencoded\" -H 'Referer: https://www.google.com/' -X 'GET' 'http://localhost:" + wiremockPort + "/users'",
         };
 
-        CurlToClassWithTests.generateClassWithDependencies(curls);
+        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
     }
 
     @Test
@@ -78,7 +78,7 @@ class CurlToClassWithTestsTest {
                 "curl 'http://localhost:" + wiremockPort + "/todos'"
         };
 
-        CurlToClassWithTests.generateClassWithDependencies(curls);
+        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
     }
 
     @Test
@@ -89,27 +89,8 @@ class CurlToClassWithTestsTest {
                 "curl 'http://localhost:" + wiremockPort + "/posts' -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}'",
                 "curl -H 'Accept-Language: en-US,en;q=0.5' -H \"Content-Type: application/x-www-form-urlencoded\" -H 'Referer: https://www.google.com/' -X 'GET' 'http://localhost:" + wiremockPort + "/users'",
         };
-//        CurlToClassWithTests.generateClassWithDependencies(curls);
-        rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
+        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
     }
 
-    private void rerunAndRecordWiremockifHttpError (Runnable runnable) {
 
-        try {
-            runnable.run();
-        } catch (RuntimeException e) {
-            if (ExceptionUtils.indexOfThrowable(e, HttpClientErrorException.class) != -1) {
-                //We have an http exception, so let's record again
-                wiremockWrapper.startRecording();
-                runnable.run();
-                wiremockWrapper.saveAllRecordings();
-
-                wiremockWrapper = new WiremockWrapper();
-                //Run again, while not recording to make sure it has recorded successfully
-                runnable.run();
-            } else {
-                throw e;
-            }
-        }
-    }
 }
