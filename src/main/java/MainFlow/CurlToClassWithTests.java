@@ -10,6 +10,7 @@ import splitter.CurlToComponents;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,42 +22,49 @@ import java.util.stream.Collectors;
 public class CurlToClassWithTests {
     private static CodeExecutor codeExecutor = new CodeExecutor();
 
-    public static void generateClassWithDependencies (String [] curlArray) throws Exception {
-        Path customTemplatePath = Paths.get(ClassLoader.getSystemResource("template/Custom.java").toURI());
-        String customTemplate = Files.readString(customTemplatePath);
+    public static void generateClassWithDependencies(String[] curlArray) {
+        Path customTemplatePath = null;
+        try {
+            customTemplatePath = Paths.get(ClassLoader.getSystemResource("template/Custom.java").toURI());
+            String customTemplate = Files.readString(customTemplatePath);
 
-        Path defaultTemplatePath = Paths.get(ClassLoader.getSystemResource("template/Default.java").toURI());
-        String defaultCodeTemplate = Files.readString(defaultTemplatePath);
 
-        List<Map<CommandType, List<String>>> componentMapList = Arrays.stream(curlArray).map(CurlToComponents::extractComponents).collect(Collectors.toList());
+            Path defaultTemplatePath = Paths.get(ClassLoader.getSystemResource("template/Default.java").toURI());
+            String defaultCodeTemplate = Files.readString(defaultTemplatePath);
 
-        for (Map<CommandType, List<String>> componentMap: componentMapList) {
-            String url = componentMap.get(CommandType.NONE).get(0);
-            String classNameFromUrl = UrlToClassName.urlToClassName(url);
 
-            componentMapToJsonFile(componentMap, classNameFromUrl);
+            List<Map<CommandType, List<String>>> componentMapList = Arrays.stream(curlArray).map(CurlToComponents::extractComponents).collect(Collectors.toList());
 
-            String restTemplateBlock = CommandSectionsToInitialization.commandSectionsToRestTemplate(componentMap);
-            String restResponse = codeExecutor.runCode("GeneratedCodeForInitialHttpRequest", defaultCodeTemplate, restTemplateBlock, "String", "responseEntity.getBody()");
-            String tests = CommandSectionsToTests.jsonToTests(restResponse);
+            for (Map<CommandType, List<String>> componentMap : componentMapList) {
+                String url = componentMap.get(CommandType.NONE).get(0);
+                String classNameFromUrl = UrlToClassName.urlToClassName(url);
 
-            String fullCodeBlockWithTests =
-                    restTemplateBlock +
-                            tests;
+                componentMapToJsonFile(componentMap, classNameFromUrl);
 
-            String output = codeExecutor.runCode(classNameFromUrl + "Default", defaultCodeTemplate,  fullCodeBlockWithTests, "boolean", "true");
+                String restTemplateBlock = CommandSectionsToInitialization.commandSectionsToRestTemplate(componentMap);
+                String restResponse = codeExecutor.runCode("GeneratedCodeForInitialHttpRequest", defaultCodeTemplate, restTemplateBlock, "String", "responseEntity.getBody()");
+                String tests = CommandSectionsToTests.jsonToTests(restResponse);
 
-            if(!output.equals("true")) {
-                throw new RuntimeException("The following curl failed: " + componentMap.get(CommandType.ORIGINAL_COMMAND).get(0));
+                String fullCodeBlockWithTests =
+                        restTemplateBlock +
+                                tests;
+
+                String output = codeExecutor.runCode(classNameFromUrl + "Default", defaultCodeTemplate, fullCodeBlockWithTests, "boolean", "true");
+
+                if (!output.equals("true")) {
+                    throw new RuntimeException("The following curl failed: " + componentMap.get(CommandType.ORIGINAL_COMMAND).get(0));
+                }
+
+                codeExecutor.generateCode(UrlToClassName.urlToClassName(url), customTemplate, fullCodeBlockWithTests, "boolean", "true");
             }
-
-            codeExecutor.generateCode(UrlToClassName.urlToClassName(url), customTemplate,  fullCodeBlockWithTests, "boolean", "true");
+        } catch (URISyntaxException | IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private static void componentMapToJsonFile(Map<CommandType, List<String>> componentMap, String fileName){
-         try {
-            new ObjectMapper().writeValue(new File("tmp/" +fileName + ".json"), componentMap);
+    private static void componentMapToJsonFile(Map<CommandType, List<String>> componentMap, String fileName) {
+        try {
+            new ObjectMapper().writeValue(new File("tmp/" + fileName + ".json"), componentMap);
         } catch (IOException e) {
             e.printStackTrace();
         }

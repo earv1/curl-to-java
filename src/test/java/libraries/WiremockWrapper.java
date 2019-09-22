@@ -1,13 +1,19 @@
 package libraries;
 
 import codeexecutor.UrlToClassName;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
 import com.github.tomakehurst.wiremock.common.SingleRootFileSource;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
+import com.github.tomakehurst.wiremock.recording.RecordingStatus;
 import com.github.tomakehurst.wiremock.recording.SnapshotRecordResult;
+import com.github.tomakehurst.wiremock.stubbing.StubImport;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,47 +32,79 @@ public class WiremockWrapper {
     //I actually wanted to manage saving myself, so I could organize it better.
     //But unfortunately it's not possible to disable it, so instead I put it in a tmp directory
     private final File defaultStubsFolder = customStubsFolder;
+    private final ObjectMapper objectMapper;
 
 
+    public void reinitializeMappingsDirectory(){
+        try {
+            FileUtils.deleteDirectory((new File(defaultStubsFolder + "/mappings")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        new File(defaultStubsFolder + "/mappings").mkdirs();
+    }
     public WiremockWrapper() {
+        objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+        objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        objectMapper.configure(JsonParser.Feature.IGNORE_UNDEFINED, true);
 
+        reinitializeMappingsDirectory();
 
         WireMockConfiguration config = options();
         config.extensions(new ResponseTemplateTransformer(false));
+        config.notifier(new ConsoleNotifier(true));
+
         config.dynamicPort();
 
 
-        new File(defaultStubsFolder + "/mappings").mkdirs();
+
         config.fileSource(new SingleRootFileSource(defaultStubsFolder));
 
-
         wireMockServer = new WireMockServer(config);
-        List<File> jsonStubFileList = Arrays.stream(customStubsFolder.listFiles()).filter((file)->file.getAbsolutePath().matches("\\.json$")).collect(Collectors.toList());
-        try {
-            for (File jsonStubFile : jsonStubFileList) {
-                wireMockServer.addStubMapping(new ObjectMapper().readValue(jsonStubFile, StubMapping.class));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Could not read wiremock files!", e);
+
+        List<StubMapping> jsonStubFileList = Arrays.stream(customStubsFolder.listFiles()).
+                filter((file)->file.getAbsolutePath().matches(".*\\.json$")).
+                map(jsonStubFile -> {
+                    try {
+                        StubMapping stubMapping = objectMapper.readValue(jsonStubFile, StubMapping.class);
+                        return stubMapping;
+                    } catch (IOException e) {
+                        throw new RuntimeException("Could not read wiremock files!", e);
+                    }
+                })
+        .collect(Collectors.toList());
+        //wireMockServer.importStubs(new StubImport(jsonStubFileList, StubImport.Options.DEFAULTS));
+        for(StubMapping jsonStubFile: jsonStubFileList) {
+            wireMockServer.addStubMapping(jsonStubFile);
         }
-
-
         wireMockServer.start();
-        wireMockServer.startRecording("http://jsonplaceholder.typicode.com/");
         port = wireMockServer.port();
     }
 
-    public void getAllRecordings() {
-        SnapshotRecordResult snapshotRecordResult = wireMockServer.stopRecording();
-        try {
-            for (StubMapping stubMapping : snapshotRecordResult.getStubMappings()) {
-                new ObjectMapper().writeValue(new File(customStubsFolder + "/" + UrlToClassName.urlToClassName(stubMapping.getRequest().getUrl()) + ".json"), stubMapping);
+    public void startRecording(){
+        wireMockServer.startRecording("http://jsonplaceholder.typicode.com/");
+    }
+
+    public void saveAllRecordings() {
+        if(wireMockServer.getRecordingStatus().getStatus().equals(RecordingStatus.Recording)) {
+            SnapshotRecordResult snapshotRecordResult = wireMockServer.stopRecording();
+            try {
+                for (StubMapping stubMapping : snapshotRecordResult.getStubMappings()) {
+                    if(stubMapping.getResponse().wasConfigured()) {
+                        //this allows us to make the matcher not worry about the required state
+                        stubMapping.setRequiredScenarioState(null);
+                        objectMapper.writeValue(new File(customStubsFolder + "/" + UrlToClassName.urlToClassName(stubMapping.getRequest().getUrl() + "-" + stubMapping.getRequest().getMethod()) + ".json"), stubMapping);
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Could not write wiremock files!", e);
+            } finally {
+                wireMockServer.stop();
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Could not write wiremock files!", e);
-        } finally {
-            wireMockServer.stop();
         }
+        reinitializeMappingsDirectory();
     }
 
     public int getPort() {
