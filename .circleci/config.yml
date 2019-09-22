@@ -6,6 +6,7 @@ jobs: # a collection of steps
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
+      BUILD_SERVER: "true"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     docker: # run the steps with Docker
       - image: circleci/openjdk:11.0.3-jdk-stretch # ...with this image as the primary container; this is where all `steps` will run
@@ -19,7 +20,7 @@ jobs: # a collection of steps
       - run:
           name: Run tests # See: https://circleci.com/docs/2.0/parallelism-faster-jobs/
           # Use "./gradlew test" instead if tests are not run in parallel
-          command: ./gradlew test -Dbuild-server=true --error
+          command: ./gradlew test -Dbuild-server=true --stacktrace
       #- save_cache:
       #    paths:
       #      - ~/.gradle/wrapper

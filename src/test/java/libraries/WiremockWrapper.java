@@ -210,6 +210,6 @@ public class WiremockWrapper {
      * @return
      */
     public boolean isBuildServer(){
-        return System.getProperty("build-server").equals("true");
+        return "true".equals(System.getenv("BUILD_SERVER"));
     }
 }
