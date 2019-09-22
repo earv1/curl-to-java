@@ -26,16 +26,23 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 
 public class WiremockWrapper {
     private final WireMockServer wireMockServer;
-    private final int port;
     private final File customStubsFolder = new File("tmp/wiremock/");
 
     //I actually wanted to manage saving myself, so I could organize it better.
     //But unfortunately it's not possible to disable it, so instead I put it in a tmp directory
     private final File defaultStubsFolder = customStubsFolder;
-    private final ObjectMapper objectMapper;
+    private final static ObjectMapper objectMapper;
+    private static int port;//we don't want this to change
 
+    static {
+        objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+        objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        objectMapper.configure(JsonParser.Feature.IGNORE_UNDEFINED, true);
 
-    public void reinitializeMappingsDirectory(){
+    }
+    private void reinitializeMappingsDirectory() {
         try {
             FileUtils.deleteDirectory((new File(defaultStubsFolder + "/mappings")));
         } catch (IOException e) {
@@ -43,12 +50,9 @@ public class WiremockWrapper {
         }
         new File(defaultStubsFolder + "/mappings").mkdirs();
     }
+
+
     public WiremockWrapper() {
-        objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
-        objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-        objectMapper.configure(JsonParser.Feature.IGNORE_UNDEFINED, true);
 
         reinitializeMappingsDirectory();
 
@@ -56,11 +60,16 @@ public class WiremockWrapper {
         config.extensions(new ResponseTemplateTransformer(false));
         config.notifier(new ConsoleNotifier(true));
 
-        config.dynamicPort();
-
 
 
         config.fileSource(new SingleRootFileSource(defaultStubsFolder));
+
+
+        if(port <= 0) {
+            config.dynamicPort();
+        } else {
+            config.port(port);
+        }
 
         wireMockServer = new WireMockServer(config);
 
@@ -75,12 +84,11 @@ public class WiremockWrapper {
                     }
                 })
         .collect(Collectors.toList());
-        //wireMockServer.importStubs(new StubImport(jsonStubFileList, StubImport.Options.DEFAULTS));
-        for(StubMapping jsonStubFile: jsonStubFileList) {
-            wireMockServer.addStubMapping(jsonStubFile);
-        }
+
+        wireMockServer.importStubs(new StubImport(jsonStubFileList, StubImport.Options.DEFAULTS));
+
         wireMockServer.start();
-        port = wireMockServer.port();
+        this.port = wireMockServer.port();
     }
 
     public void startRecording(){

@@ -111,7 +111,5 @@ class CurlToClassWithTestsTest {
                 throw e;
             }
         }
-
-
     }
 }
