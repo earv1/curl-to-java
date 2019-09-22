@@ -17,6 +17,8 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
@@ -29,6 +31,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 
 
 public class WiremockWrapper {
+    private static final Logger logger = LoggerFactory.getLogger(WiremockWrapper.class);
 
     private final File customStubsFolder = new File("src/main/resources/wiremock/mappings");
     private final String customStubsFolderAccessFromResources = "wiremock/mappings";
@@ -82,35 +85,52 @@ public class WiremockWrapper {
 
         wireMockServer = new WireMockServer(config);
 
-        List<StubMapping> jsonStubFileList = null;
-        try {
-            List<String> filesInWiremockStubResourceDirectory = IOUtils.readLines(WiremockWrapper.class.getClassLoader().getResourceAsStream(customStubsFolderAccessFromResources), Charsets.UTF_8);
-            jsonStubFileList = filesInWiremockStubResourceDirectory
-                    .stream().filter((file)->file.matches(".*\\.json$")).
-                    map(jsonStubFileName -> {
-                        try {
-                            File jsonStubFile = new File(getClass().getClassLoader().getResource(customStubsFolderAccessFromResources + "/" + jsonStubFileName).getFile());
-                            StubMapping stubMapping = objectMapper.readValue(jsonStubFile, StubMapping.class);
-                            return stubMapping;
-                        } catch (IOException e) {
-                            throw new RuntimeException("Could not read wiremock files!", e);
-                        }
-                    })
-                    .collect(Collectors.toList());
 
-            wireMockServer.importStubs(new StubImport(jsonStubFileList, StubImport.Options.DEFAULTS));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         //Arrays.stream(customStubsFolder.listFiles()).
-        wireMockServer.importStubs(new StubImport(jsonStubFileList, StubImport.Options.DEFAULTS));
+        wireMockServer.importStubs(new StubImport(getStubMappings(), StubImport.Options.DEFAULTS));
 
         wireMockServer.start();
         this.port = wireMockServer.port();
 
     }
 
-    public void startRecording(){
+    List<StubMapping> getStubMappings() {
+        List<StubMapping> jsonStubFileList = null;
+        try {
+            if(isJar()){
+                List<String> filesInWiremockStubResourceDirectory = IOUtils.readLines(WiremockWrapper.class.getClassLoader().getResourceAsStream(customStubsFolderAccessFromResources), Charsets.UTF_8);
+                jsonStubFileList = filesInWiremockStubResourceDirectory
+                        .stream().filter((file)->file.matches(".*\\.json$")).
+                                map(jsonStubFileName -> {
+                                    try {
+                                        File jsonStubFile = new File(getClass().getClassLoader().getResource(customStubsFolderAccessFromResources + "/" + jsonStubFileName).getFile());
+                                        StubMapping stubMapping = objectMapper.readValue(jsonStubFile, StubMapping.class);
+                                        return stubMapping;
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Could not read wiremock files!", e);
+                                    }
+                                })
+                        .collect(Collectors.toList());
+            } else {
+                jsonStubFileList =  Arrays.stream(customStubsFolder.listFiles())
+                        .filter((file)->file.getAbsolutePath().matches(".*\\.json$")).
+                                map(jsonStubFile -> {
+                                    try {
+                                        StubMapping stubMapping = objectMapper.readValue(jsonStubFile, StubMapping.class);
+                                        return stubMapping;
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Could not read wiremock files!", e);
+                                    }
+                                })
+                        .collect(Collectors.toList());
+            }
+            return jsonStubFileList;
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load wiremock mappings");
+        }
+    }
+
+    void startRecording(){
         wireMockServer.startRecording("http://jsonplaceholder.typicode.com/");
     }
 
@@ -131,6 +151,8 @@ public class WiremockWrapper {
                 } finally {
                     wireMockServer.stop();
                 }
+            } else {
+
             }
             reinitializeMappingsDirectory();
         } else {
@@ -144,14 +166,21 @@ public class WiremockWrapper {
     public void rerunAndRecordWiremockifHttpError(final Runnable runnable) {
 
         try {
+            logger.info("Trying to run code with wiremock as proxys");
             runnable.run();
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
+            logger.info("Got an exception, let's see if it's an http one");
             if (ExceptionUtils.indexOfThrowable(e, HttpClientErrorException.class) != -1) {
+                logger.info("Http exception caught, handling http exception");
+
+                logger.info("Start recording new wiremock mappings");
                 //We have an http exception, so let's record again
                 startRecording();
                 runnable.run();
                 saveAllRecordings();
+                logger.info("Recording saved");
 
+                logger.info("Try again");
                 startServerWithFileMocks();
                 //Run again, while not recording to make sure it has recorded successfully
                 runnable.run();
