@@ -154,9 +154,11 @@ public class WiremockWrapper {
             }
             reinitializeMappingsDirectory();
         } else {
-            throw new RuntimeException(
-                    "You are recording with wiremock, but you are doing it while running a jar. This means that we can't save the new mocks. \n" +
-                    "To rectify this, run `./gradlew test`, then commit any new wiremock wrappings in resources");
+            String wiremockSaveError =
+           "\"You are recording with wiremock, but you are doing it while running a jar. This means that we can't save the new mocks. \\n\" +\n" +
+                    "                    \"To rectify this, run `./gradlew test`, then commit any new wiremock wrappings in resources\"";
+            logger.error(wiremockSaveError);
+            throw new RuntimeException(wiremockSaveError);
         }
 
     }
