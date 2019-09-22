@@ -10,9 +10,10 @@ import org.slf4j.LoggerFactory;
 
 public class {class-name} {
 
-    final static RestTemplate restTemplate = new RestTemplate();
-    final static Logger logger = LoggerFactory.getLogger({class-name}.class);
-    final static ObjectMapper mapper = new ObjectMapper();
+    private final static Logger logger = LoggerFactory.getLogger({class-name}.class);
+
+    private final static RestTemplate restTemplate = new RestTemplate();
+    private final static ObjectMapper mapper = new ObjectMapper();
 
 
     public static {return-type} execute() throws Exception {
