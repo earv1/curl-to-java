@@ -135,8 +135,8 @@ public class WiremockWrapper {
     }
 
     public void saveAllRecordings() {
-        if(!isJar() && !isBuildServer()) {
-            if(wireMockServer.getRecordingStatus().getStatus().equals(RecordingStatus.Recording)) {
+        if(wireMockServer.getRecordingStatus().getStatus().equals(RecordingStatus.Recording)) {
+            if(!isJar() && !isBuildServer()) {
                 SnapshotRecordResult snapshotRecordResult = wireMockServer.stopRecording();
                 try {
                     for (StubMapping stubMapping : snapshotRecordResult.getStubMappings()) {
@@ -151,14 +151,14 @@ public class WiremockWrapper {
                 } finally {
                     wireMockServer.stop();
                 }
+            } else {
+                String wiremockSaveError =
+                        "\"You are recording with wiremock, but you are doing it while running a jar. This means that we can't save the new mocks. \\n\" +\n" +
+                                "                    \"To rectify this, run `./gradlew test`, then commit any new wiremock wrappings in resources\"";
+                logger.error(wiremockSaveError);
+                throw new RuntimeException(wiremockSaveError);
             }
             reinitializeMappingsDirectory();
-        } else {
-            String wiremockSaveError =
-           "\"You are recording with wiremock, but you are doing it while running a jar. This means that we can't save the new mocks. \\n\" +\n" +
-                    "                    \"To rectify this, run `./gradlew test`, then commit any new wiremock wrappings in resources\"";
-            logger.error(wiremockSaveError);
-            throw new RuntimeException(wiremockSaveError);
         }
 
     }
