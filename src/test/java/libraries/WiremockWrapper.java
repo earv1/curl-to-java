@@ -13,7 +13,9 @@ import com.github.tomakehurst.wiremock.recording.RecordingStatus;
 import com.github.tomakehurst.wiremock.recording.SnapshotRecordResult;
 import com.github.tomakehurst.wiremock.stubbing.StubImport;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -27,11 +29,14 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 
 
 public class WiremockWrapper {
-    private final File customStubsFolder = new File("tmp/wiremock/");
+
+    private final File customStubsFolder = new File("src/main/resources/wiremock/mappings");
+    private final String customStubsFolderAccessFromResources = "wiremock/mappings";
+
 
     //I actually wanted to manage saving myself, so I could organize it better.
     //But unfortunately it's not possible to disable it, so instead I put it in a tmp directory
-    private final File defaultStubsFolder = customStubsFolder;
+    private final File defaultStubsFolder = new File("tmp/wiremock/");
     private final static ObjectMapper objectMapper;
     private static int port;//we don't want this to change
     private WireMockServer wireMockServer;
@@ -56,6 +61,8 @@ public class WiremockWrapper {
 
 
     public WiremockWrapper() {
+        customStubsFolder.mkdirs();
+
         startServerWithFileMocks();
     }
 
@@ -75,18 +82,27 @@ public class WiremockWrapper {
 
         wireMockServer = new WireMockServer(config);
 
-        List<StubMapping> jsonStubFileList = Arrays.stream(customStubsFolder.listFiles()).
-                filter((file)->file.getAbsolutePath().matches(".*\\.json$")).
-                map(jsonStubFile -> {
-                    try {
-                        StubMapping stubMapping = objectMapper.readValue(jsonStubFile, StubMapping.class);
-                        return stubMapping;
-                    } catch (IOException e) {
-                        throw new RuntimeException("Could not read wiremock files!", e);
-                    }
-                })
-                .collect(Collectors.toList());
+        List<StubMapping> jsonStubFileList = null;
+        try {
+            List<String> filesInWiremockStubResourceDirectory = IOUtils.readLines(WiremockWrapper.class.getClassLoader().getResourceAsStream(customStubsFolderAccessFromResources), Charsets.UTF_8);
+            jsonStubFileList = filesInWiremockStubResourceDirectory
+                    .stream().filter((file)->file.matches(".*\\.json$")).
+                    map(jsonStubFileName -> {
+                        try {
+                            File jsonStubFile = new File(getClass().getClassLoader().getResource(customStubsFolderAccessFromResources + "/" + jsonStubFileName).getFile());
+                            StubMapping stubMapping = objectMapper.readValue(jsonStubFile, StubMapping.class);
+                            return stubMapping;
+                        } catch (IOException e) {
+                            throw new RuntimeException("Could not read wiremock files!", e);
+                        }
+                    })
+                    .collect(Collectors.toList());
 
+            wireMockServer.importStubs(new StubImport(jsonStubFileList, StubImport.Options.DEFAULTS));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //Arrays.stream(customStubsFolder.listFiles()).
         wireMockServer.importStubs(new StubImport(jsonStubFileList, StubImport.Options.DEFAULTS));
 
         wireMockServer.start();
@@ -99,23 +115,30 @@ public class WiremockWrapper {
     }
 
     public void saveAllRecordings() {
-        if(wireMockServer.getRecordingStatus().getStatus().equals(RecordingStatus.Recording)) {
-            SnapshotRecordResult snapshotRecordResult = wireMockServer.stopRecording();
-            try {
-                for (StubMapping stubMapping : snapshotRecordResult.getStubMappings()) {
-                    if(stubMapping.getResponse().wasConfigured()) {
-                        //this allows us to make the matcher not worry about the required state
-                        stubMapping.setRequiredScenarioState(null);
-                        objectMapper.writeValue(new File(customStubsFolder + "/" + UrlToClassName.urlToClassName(stubMapping.getRequest().getUrl() + "-" + stubMapping.getRequest().getMethod()) + ".json"), stubMapping);
+        if(!isJar()) {
+            if(wireMockServer.getRecordingStatus().getStatus().equals(RecordingStatus.Recording)) {
+                SnapshotRecordResult snapshotRecordResult = wireMockServer.stopRecording();
+                try {
+                    for (StubMapping stubMapping : snapshotRecordResult.getStubMappings()) {
+                        if(stubMapping.getResponse().wasConfigured()) {
+                            //this allows us to make the matcher not worry about the required state
+                            stubMapping.setRequiredScenarioState(null);
+                            objectMapper.writeValue(new File(customStubsFolder + "/" + UrlToClassName.urlToClassName(stubMapping.getRequest().getUrl() + "-" + stubMapping.getRequest().getMethod()) + ".json"), stubMapping);
+                        }
                     }
+                } catch (IOException e) {
+                    throw new RuntimeException("Could not write wiremock files!", e);
+                } finally {
+                    wireMockServer.stop();
                 }
-            } catch (IOException e) {
-                throw new RuntimeException("Could not write wiremock files!", e);
-            } finally {
-                wireMockServer.stop();
             }
+            reinitializeMappingsDirectory();
+        } else {
+            throw new RuntimeException(
+                    "You are recording with wiremock, but you are doing it while running a jar. This means that we can't save the new mocks. \n" +
+                    "To rectify this, run `./gradlew test`, then commit any new wiremock wrappings in resources");
         }
-        reinitializeMappingsDirectory();
+
     }
 
     public void rerunAndRecordWiremockifHttpError(final Runnable runnable) {
@@ -141,5 +164,15 @@ public class WiremockWrapper {
 
     public int getPort() {
         return port;
+    }
+
+    /**
+     * There is no point in saving wiremock mappings to a place that is deleted.
+     * The solution to this, is to save it to resources when it is able to
+     * and throw a a clear error message when it is not
+     * @return
+     */
+    public boolean isJar(){
+        return WiremockWrapper.class.getResource("WiremockWrapper.class").toString().startsWith("jar");
     }
 }
