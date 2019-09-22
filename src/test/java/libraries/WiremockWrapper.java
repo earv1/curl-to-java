@@ -27,7 +27,6 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 
 
 public class WiremockWrapper {
-    private final WireMockServer wireMockServer;
     private final File customStubsFolder = new File("tmp/wiremock/");
 
     //I actually wanted to manage saving myself, so I could organize it better.
@@ -35,6 +34,8 @@ public class WiremockWrapper {
     private final File defaultStubsFolder = customStubsFolder;
     private final static ObjectMapper objectMapper;
     private static int port;//we don't want this to change
+    private WireMockServer wireMockServer;
+
 
     static {
         objectMapper = new ObjectMapper();
@@ -55,15 +56,14 @@ public class WiremockWrapper {
 
 
     public WiremockWrapper() {
+        startServerWithFileMocks();
+    }
 
+    private void startServerWithFileMocks() {
         reinitializeMappingsDirectory();
-
         WireMockConfiguration config = options();
         config.extensions(new ResponseTemplateTransformer(false));
         config.notifier(new ConsoleNotifier(true));
-
-
-
         config.fileSource(new SingleRootFileSource(defaultStubsFolder));
 
 
@@ -85,12 +85,13 @@ public class WiremockWrapper {
                         throw new RuntimeException("Could not read wiremock files!", e);
                     }
                 })
-        .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         wireMockServer.importStubs(new StubImport(jsonStubFileList, StubImport.Options.DEFAULTS));
 
         wireMockServer.start();
         this.port = wireMockServer.port();
+
     }
 
     public void startRecording(){
@@ -117,27 +118,25 @@ public class WiremockWrapper {
         reinitializeMappingsDirectory();
     }
 
-    public static WiremockWrapper rerunAndRecordWiremockifHttpError(final Runnable runnable, WiremockWrapper wiremockWrapper) {
+    public void rerunAndRecordWiremockifHttpError(final Runnable runnable) {
 
         try {
             runnable.run();
         } catch (RuntimeException e) {
             if (ExceptionUtils.indexOfThrowable(e, HttpClientErrorException.class) != -1) {
                 //We have an http exception, so let's record again
-                wiremockWrapper.startRecording();
+                startRecording();
                 runnable.run();
-                wiremockWrapper.saveAllRecordings();
+                saveAllRecordings();
 
-                WiremockWrapper newWiremockWrapper = new WiremockWrapper();
+                startServerWithFileMocks();
                 //Run again, while not recording to make sure it has recorded successfully
                 runnable.run();
 
-                return newWiremockWrapper;
             } else {
                 throw e;
             }
         }
-        return wiremockWrapper;
     }
 
     public int getPort() {

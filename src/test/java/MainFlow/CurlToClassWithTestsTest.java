@@ -32,7 +32,7 @@ class CurlToClassWithTestsTest {
                 "curl http://localhost:" + wiremockPort + "/posts -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\"",
         };
 
-        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
+        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -41,7 +41,7 @@ class CurlToClassWithTestsTest {
                 "curl -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\" http://localhost:" + wiremockPort + "/posts",
         };
 
-        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
+        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -51,7 +51,7 @@ class CurlToClassWithTestsTest {
                 "curl 'http://localhost:" + wiremockPort + "/posts' -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}'",
         };
 
-        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
+        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -60,7 +60,7 @@ class CurlToClassWithTestsTest {
                 "curl -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' 'http://localhost:" + wiremockPort + "/posts'",
         };
 
-        CurlToClassWithTests.generateClassWithDependencies(curls);
+        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -69,7 +69,7 @@ class CurlToClassWithTestsTest {
                 "curl -H 'Accept-Language: en-US,en;q=0.5' -H \"Content-Type: application/x-www-form-urlencoded\" -H 'Referer: https://www.google.com/' -X 'GET' 'http://localhost:" + wiremockPort + "/users'",
         };
 
-        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
+        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -78,7 +78,7 @@ class CurlToClassWithTestsTest {
                 "curl 'http://localhost:" + wiremockPort + "/todos'"
         };
 
-        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
+        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -89,7 +89,7 @@ class CurlToClassWithTestsTest {
                 "curl 'http://localhost:" + wiremockPort + "/posts' -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}'",
                 "curl -H 'Accept-Language: en-US,en;q=0.5' -H \"Content-Type: application/x-www-form-urlencoded\" -H 'Referer: https://www.google.com/' -X 'GET' 'http://localhost:" + wiremockPort + "/users'",
         };
-        wiremockWrapper = WiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls), wiremockWrapper);
+        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
 
