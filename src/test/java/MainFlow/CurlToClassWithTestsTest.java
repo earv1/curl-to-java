@@ -1,12 +1,9 @@
 package MainFlow;
 
 import libraries.WiremockWrapper;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.NestedRuntimeException;
-import org.springframework.web.client.HttpClientErrorException;
 
 
 class CurlToClassWithTestsTest {
@@ -32,7 +29,7 @@ class CurlToClassWithTestsTest {
                 "curl http://localhost:" + wiremockPort + "/posts -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\"",
         };
 
-        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
+        wiremockWrapper.rerunAndRecordWiremockOnHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -41,7 +38,7 @@ class CurlToClassWithTestsTest {
                 "curl -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' -H \"Content-type: application/json; charset=UTF-8\" http://localhost:" + wiremockPort + "/posts",
         };
 
-        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
+        wiremockWrapper.rerunAndRecordWiremockOnHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -51,7 +48,7 @@ class CurlToClassWithTestsTest {
                 "curl 'http://localhost:" + wiremockPort + "/posts' -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}'",
         };
 
-        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
+        wiremockWrapper.rerunAndRecordWiremockOnHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -60,7 +57,7 @@ class CurlToClassWithTestsTest {
                 "curl -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}' 'http://localhost:" + wiremockPort + "/posts'",
         };
 
-        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
+        wiremockWrapper.rerunAndRecordWiremockOnHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -69,7 +66,7 @@ class CurlToClassWithTestsTest {
                 "curl -H 'Accept-Language: en-US,en;q=0.5' -H \"Content-Type: application/x-www-form-urlencoded\" -H 'Referer: https://www.google.com/' -X 'GET' 'http://localhost:" + wiremockPort + "/users'",
         };
 
-        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
+        wiremockWrapper.rerunAndRecordWiremockOnHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -78,7 +75,7 @@ class CurlToClassWithTestsTest {
                 "curl 'http://localhost:" + wiremockPort + "/todos'"
         };
 
-        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
+        wiremockWrapper.rerunAndRecordWiremockOnHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
     @Test
@@ -89,7 +86,7 @@ class CurlToClassWithTestsTest {
                 "curl 'http://localhost:" + wiremockPort + "/posts' -H \"Content-type: application/json; charset=UTF-8\" -d '{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}'",
                 "curl -H 'Accept-Language: en-US,en;q=0.5' -H \"Content-Type: application/x-www-form-urlencoded\" -H 'Referer: https://www.google.com/' -X 'GET' 'http://localhost:" + wiremockPort + "/users'",
         };
-        wiremockWrapper.rerunAndRecordWiremockifHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
+        wiremockWrapper.rerunAndRecordWiremockOnHttpError(() -> CurlToClassWithTests.generateClassWithDependencies(curls));
     }
 
 

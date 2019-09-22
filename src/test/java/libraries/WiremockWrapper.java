@@ -135,7 +135,7 @@ public class WiremockWrapper {
     }
 
     public void saveAllRecordings() {
-        if(!isJar()) {
+        if(!isJar() && !isBuildServer()) {
             if(wireMockServer.getRecordingStatus().getStatus().equals(RecordingStatus.Recording)) {
                 SnapshotRecordResult snapshotRecordResult = wireMockServer.stopRecording();
                 try {
@@ -151,8 +151,6 @@ public class WiremockWrapper {
                 } finally {
                     wireMockServer.stop();
                 }
-            } else {
-
             }
             reinitializeMappingsDirectory();
         } else {
@@ -163,7 +161,7 @@ public class WiremockWrapper {
 
     }
 
-    public void rerunAndRecordWiremockifHttpError(final Runnable runnable) {
+    public void rerunAndRecordWiremockOnHttpError(final Runnable runnable) {
 
         try {
             logger.info("Trying to run code with wiremock as proxys");
@@ -203,5 +201,13 @@ public class WiremockWrapper {
      */
     public boolean isJar(){
         return WiremockWrapper.class.getResource("WiremockWrapper.class").toString().startsWith("jar");
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isBuildServer(){
+        return System.getProperty("build-server").equals("true");
     }
 }
